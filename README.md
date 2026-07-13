@@ -36,19 +36,4 @@ Traditional parking systems don't tell you in real time whether a spot is free, 
 - **Real-time sync:** Slot availability updates across all devices within seconds using Firestore listeners.
 - **Instant theft alerts:** Push notifications are triggered immediately to the admin when a theft report is submitted.
 
-## Project scope & limitations
 
-- Payment integration is simulated (no real transactions)
-- Built for Android only (Android 9.0+)
-- QR scanning is done via phone camera, not dedicated hardware scanners
-- No physical sensors — slot availability is managed digitally through the app and admin dashboard
-
-## Future improvements
-
-- Real payment gateway integration
-- Sensor/camera-based automatic slot detection
-- iOS support
-- Multi-language support (Urdu)
-
-
-1. Clone the repo
