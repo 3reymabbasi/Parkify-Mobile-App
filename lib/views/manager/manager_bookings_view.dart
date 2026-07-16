@@ -1,25 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../viewmodels/admin_parking_viewmodel.dart';
+import '../../viewmodels/manager_parking_viewmodel.dart';
 
-class AdminBookingsView extends StatelessWidget {
-  const AdminBookingsView({super.key});
+class ManagerBookingsView extends StatelessWidget {
+  const ManagerBookingsView({super.key});
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => AdminBookingsViewModel(),
-      child: const _AdminBookingsBody(),
+      create: (_) => ManagerBookingsViewModel(),
+      child: const _ManagerBookingsBody(),
     );
   }
 }
 
-class _AdminBookingsBody extends StatelessWidget {
-  const _AdminBookingsBody();
+class _ManagerBookingsBody extends StatelessWidget {
+  const _ManagerBookingsBody();
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AdminBookingsViewModel>(
+    return Consumer<ManagerBookingsViewModel>(
       builder: (context, vm, _) {
         final bookings = vm.filteredBookings;
 
@@ -173,7 +173,7 @@ class _AdminBookingsBody extends StatelessWidget {
 // ── Booking Card ───────────────────────────────────────────
 class _BookingCard extends StatelessWidget {
   final Map<String, dynamic> booking;
-  final AdminBookingsViewModel vm;
+  final ManagerBookingsViewModel vm;
 
   const _BookingCard({required this.booking, required this.vm});
 
@@ -228,7 +228,7 @@ class _BookingCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              "👤 ${booking["user"]}",
+              "👤 ${booking["driver"]}",
               style: const TextStyle(fontSize: 16, color: Colors.black87),
             ),
             const SizedBox(height: 6),

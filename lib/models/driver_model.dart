@@ -1,4 +1,4 @@
-class UserModel {
+class DriverModel {
   final String initials;
   final String name;
   final String email;
@@ -9,7 +9,7 @@ class UserModel {
   final String lastBooking;
   String status; // active | suspended
 
-  UserModel({
+  DriverModel({
     required this.initials,
     required this.name,
     required this.email,
@@ -21,8 +21,8 @@ class UserModel {
     required this.status,
   });
 
-  factory UserModel.fromMap(Map<String, dynamic> map) {
-    return UserModel(
+  factory DriverModel.fromMap(Map<String, dynamic> map) {
+    return DriverModel(
       initials: map['initials'] ?? '',
       name: map['name'] ?? '',
       email: map['email'] ?? '',

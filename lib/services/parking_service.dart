@@ -1,7 +1,7 @@
 // ============================================================
 //  SmartParkify — ParkingService
 //  Firebase Firestore se parking lots data manage karo
-//  Admin: Add, Update, Delete | User: Get all spots
+//  Manager: Add, Update, Delete | Driver: Get all spots
 // ============================================================
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -35,8 +35,8 @@ class ParkingService {
         );
   }
 
-  // ── ADMIN: GET ALL PARKING LOTS ────────────────────────────
-  Stream<List<Map<String, dynamic>>> getAllParkingLotsForAdmin() {
+  // ── MANAGER: GET ALL PARKING LOTS ────────────────────────────
+  Stream<List<Map<String, dynamic>>> getAllParkingLotsForManager() {
     return _db
         .collection('parking_lots')
         .orderBy('createdAt', descending: true)
@@ -48,7 +48,7 @@ class ParkingService {
         );
   }
 
-  // ── ADMIN: ADD NEW PARKING LOT ─────────────────────────────
+  // ── MANAGER: ADD NEW PARKING LOT ─────────────────────────────
   Future<bool> addParkingLot({
     required String name,
     required String address,
@@ -75,7 +75,7 @@ class ParkingService {
     }
   }
 
-  // ── ADMIN: UPDATE PARKING LOT ──────────────────────────────
+  // ── MANAGER: UPDATE PARKING LOT ──────────────────────────────
   Future<bool> updateParkingLot(
     String lotId,
     Map<String, dynamic> updates,
@@ -88,7 +88,7 @@ class ParkingService {
     }
   }
 
-  // ── ADMIN: DELETE PARKING LOT ──────────────────────────────
+  // ── MANAGER: DELETE PARKING LOT ──────────────────────────────
   Future<bool> deleteParkingLot(String lotId) async {
     try {
       await _db.collection('parking_lots').doc(lotId).delete();

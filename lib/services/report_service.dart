@@ -1,6 +1,6 @@
 // ============================================================
 //  SmartParkify — ReportService
-//  Admin ke liye revenue aur booking reports
+//  Manager ke liye revenue aur booking reports
 //  Firestore se aggregate data nikalna
 // ============================================================
 
@@ -43,11 +43,11 @@ class ReportService {
     }
   }
 
-  // ── ACTIVE USERS COUNT ─────────────────────────────────────
-  Future<int> getActiveUsersCount() async {
+  // ── ACTIVE DRIVERS COUNT ─────────────────────────────────────
+  Future<int> getActiveDriversCount() async {
     try {
       final snapshot = await _db
-          .collection('users')
+          .collection('drivers')
           .where('status', isEqualTo: 'active')
           .get();
       return snapshot.docs.length;
@@ -123,16 +123,16 @@ class ReportService {
       final results = await Future.wait([
         getTotalRevenue(),
         getTotalBookingsCount(),
-        getActiveUsersCount(),
+        getActiveDriversCount(),
       ]);
 
       return {
         'totalRevenue': results[0],
         'totalBookings': results[1],
-        'activeUsers': results[2],
+        'activeDrivers': results[2],
       };
     } catch (e) {
-      return {'totalRevenue': 0.0, 'totalBookings': 0, 'activeUsers': 0};
+      return {'totalRevenue': 0.0, 'totalBookings': 0, 'activeDrivers': 0};
     }
   }
 }

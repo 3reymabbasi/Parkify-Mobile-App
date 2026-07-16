@@ -1,10 +1,14 @@
+// lib/views/manager/manager_dashboard_view.dart
 import 'package:flutter/material.dart';
-import 'admin_user_management_view.dart';
-import 'admin_parking_lots_view.dart';
-import 'admin_bookings_view.dart';
+import '../../core/routes.dart';
+import 'manager_driver_management_view.dart';
+import 'manager_parking_lots_view.dart';
+import 'manager_bookings_view.dart';
+import 'manager_analytics_view.dart';
+import 'manager_reports_view.dart';
 
-class AdminDashboardView extends StatelessWidget {
-  const AdminDashboardView({super.key});
+class ManagerDashboardView extends StatelessWidget {
+  const ManagerDashboardView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -35,13 +39,24 @@ class AdminDashboardView extends StatelessWidget {
                         ),
                         onPressed: () => Navigator.pop(context),
                       ),
-                      const Text(
-                        'Admin Panel',
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                      const Expanded(
+                        child: Text(
+                          'Manager Panel',
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
+                      ),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.logout_rounded,
+                          color: Colors.redAccent,
+                          size: 26,
+                        ),
+                        tooltip: 'Logout',
+                        onPressed: () => _confirmLogout(context),
                       ),
                     ],
                   ),
@@ -58,7 +73,7 @@ class AdminDashboardView extends StatelessWidget {
                     children: const [
                       _StatCard(
                         title: '2,456',
-                        subtitle: 'Total Users',
+                        subtitle: 'Total Drivers',
                         icon: Icons.people,
                       ),
                       _StatCard(
@@ -77,7 +92,7 @@ class AdminDashboardView extends StatelessWidget {
 
                   const SizedBox(height: 32),
                   const Text(
-                    'Admin Modules',
+                    'Manager Modules',
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
@@ -90,12 +105,12 @@ class AdminDashboardView extends StatelessWidget {
                   _ModuleTile(
                     icon: Icons.people,
                     color: Colors.purple,
-                    title: 'User Management',
-                    subtitle: 'Manage all users and permissions',
+                    title: 'Driver Management',
+                    subtitle: 'Manage all drivers and permissions',
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const AdminUserManagementView(),
+                        builder: (_) => const ManagerDriverManagementView(),
                       ),
                     ),
                   ),
@@ -107,7 +122,7 @@ class AdminDashboardView extends StatelessWidget {
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const AdminParkingLotsView(),
+                        builder: (_) => const ManagerParkingLotsView(),
                       ),
                     ),
                   ),
@@ -119,29 +134,88 @@ class AdminDashboardView extends StatelessWidget {
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const AdminBookingsView(),
+                        builder: (_) => const ManagerBookingsView(),
                       ),
                     ),
                   ),
                   _ModuleTile(
-                    icon: Icons.currency_rupee,
+                    icon: Icons.account_balance_wallet,
                     color: Colors.teal,
                     title: 'Revenue Analytics',
                     subtitle: 'Financial reports and insights',
-                    onTap: () {},
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const ManagerAnalyticsView(),
+                      ),
+                    ),
                   ),
                   _ModuleTile(
                     icon: Icons.description,
                     color: Colors.red,
                     title: 'Reports Management',
-                    subtitle: 'Handle user-submitted issues',
-                    onTap: () {},
+                    subtitle: 'Handle driver-submitted issues',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const ManagerReportsView(),
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  void _confirmLogout(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text(
+          'Logout',
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
+        ),
+        content: const Text(
+          'Are you sure you want to logout from SmartParkify?',
+          style: TextStyle(color: Colors.black54),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.black54),
+            ),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            onPressed: () {
+              Navigator.pop(ctx); // dialog band karo
+              // Poora navigation stack saaf karke Login page pe le jao
+              Navigator.of(
+                context,
+              ).pushNamedAndRemoveUntil(AppRoutes.login, (route) => false);
+            },
+            child: const Text(
+              'Logout',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../viewmodels/admin_viewmodel.dart';
-import '../../models/user_model.dart';
+import '../../viewmodels/manager_viewmodel.dart';
+import '../../models/driver_model.dart';
 
-class AdminUserManagementView extends StatelessWidget {
-  const AdminUserManagementView({super.key});
+class ManagerDriverManagementView extends StatelessWidget {
+  const ManagerDriverManagementView({super.key});
 
-  void _showUserActions(
+  void _showDriverActions(
     BuildContext context,
-    AdminViewModel vm,
-    UserModel user,
+    ManagerViewModel vm,
+    DriverModel driver,
   ) {
-    final globalIndex = vm.globalIndexOf(user);
+    final globalIndex = vm.globalIndexOf(driver);
 
     showModalBottomSheet(
       context: context,
@@ -24,7 +24,7 @@ class AdminUserManagementView extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Actions - ${user.name}',
+              'Actions - ${driver.name}',
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
@@ -54,15 +54,15 @@ class AdminUserManagementView extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.block, color: Colors.red),
               title: const Text(
-                'Suspend User',
+                'Suspend Driver',
                 style: TextStyle(color: Colors.red),
               ),
               onTap: () {
-                vm.suspendUser(globalIndex);
+                vm.suspendDriver(globalIndex);
                 Navigator.pop(context);
                 ScaffoldMessenger.of(
                   context,
-                ).showSnackBar(const SnackBar(content: Text('User Suspended')));
+                ).showSnackBar(const SnackBar(content: Text('Driver Suspended')));
               },
             ),
           ],
@@ -73,9 +73,9 @@ class AdminUserManagementView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AdminViewModel>(
+    return Consumer<ManagerViewModel>(
       builder: (context, vm, _) {
-        final filteredUsers = vm.filteredUsers;
+        final filteredDrivers = vm.filteredDrivers;
 
         return Scaffold(
           body: Container(
@@ -102,7 +102,7 @@ class AdminUserManagementView extends StatelessWidget {
                           onPressed: () => Navigator.pop(context),
                         ),
                         const Text(
-                          'User Management',
+                          'Driver Management',
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -118,9 +118,9 @@ class AdminUserManagementView extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Row(
                       children: [
-                        _buildStat('2,456', 'Total Users'),
+                        _buildStat('2,456', 'Total Drivers'),
                         const SizedBox(width: 12),
-                        _buildStat('2,234', 'Active Users'),
+                        _buildStat('2,234', 'Active Drivers'),
                         const SizedBox(width: 12),
                         _buildStat('156', 'New This Month'),
                         const SizedBox(width: 12),
@@ -168,13 +168,13 @@ class AdminUserManagementView extends StatelessWidget {
 
                   const SizedBox(height: 16),
 
-                  // Users List
+                  // Drivers List
                   Expanded(
                     child: ListView.builder(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: filteredUsers.length,
+                      itemCount: filteredDrivers.length,
                       itemBuilder: (context, index) {
-                        final user = filteredUsers[index];
+                        final driver = filteredDrivers[index];
 
                         return Card(
                           margin: const EdgeInsets.only(bottom: 12),
@@ -197,7 +197,7 @@ class AdminUserManagementView extends StatelessWidget {
                                           Row(
                                             children: [
                                               Text(
-                                                user.name,
+                                                driver.name,
                                                 style: const TextStyle(
                                                   fontWeight: FontWeight.w600,
                                                   fontSize: 17,
@@ -212,7 +212,7 @@ class AdminUserManagementView extends StatelessWidget {
                                                       vertical: 3,
                                                     ),
                                                 decoration: BoxDecoration(
-                                                  color: user.status == 'active'
+                                                  color: driver.status == 'active'
                                                       ? Colors.green.withValues(
                                                           alpha: 0.15,
                                                         )
@@ -223,12 +223,12 @@ class AdminUserManagementView extends StatelessWidget {
                                                       BorderRadius.circular(20),
                                                 ),
                                                 child: Text(
-                                                  user.status == 'active'
+                                                  driver.status == 'active'
                                                       ? 'active'
                                                       : 'suspended',
                                                   style: TextStyle(
                                                     color:
-                                                        user.status == 'active'
+                                                        driver.status == 'active'
                                                         ? Colors.green
                                                         : Colors.red,
                                                     fontSize: 12,
@@ -239,7 +239,7 @@ class AdminUserManagementView extends StatelessWidget {
                                             ],
                                           ),
                                           Text(
-                                            user.email,
+                                            driver.email,
                                             style: const TextStyle(
                                               color: Colors.black87,
                                               fontSize: 14,
@@ -251,7 +251,7 @@ class AdminUserManagementView extends StatelessWidget {
                                     IconButton(
                                       icon: const Icon(Icons.more_vert),
                                       onPressed: () =>
-                                          _showUserActions(context, vm, user),
+                                          _showDriverActions(context, vm, driver),
                                     ),
                                   ],
                                 ),
@@ -260,17 +260,17 @@ class AdminUserManagementView extends StatelessWidget {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    _buildUserStat(
+                                    _buildDriverStat(
                                       'Total Bookings',
-                                      user.bookings.toString(),
+                                      driver.bookings.toString(),
                                     ),
-                                    _buildUserStat(
+                                    _buildDriverStat(
                                       'Total Spent',
-                                      'Rs. ${user.spent}',
+                                      'Rs. ${driver.spent}',
                                     ),
-                                    _buildUserStat(
+                                    _buildDriverStat(
                                       'Last Booking',
-                                      user.lastBooking,
+                                      driver.lastBooking,
                                     ),
                                   ],
                                 ),
@@ -319,7 +319,7 @@ class AdminUserManagementView extends StatelessWidget {
     );
   }
 
-  Widget _buildUserStat(String label, String value) {
+  Widget _buildDriverStat(String label, String value) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
 class ProfileViewModel extends ChangeNotifier {
-  // ── User Data ──────────────────────────────────────────────
-  String _userName = 'John Doe';
-  final String userEmail = 'john.doe@smartparkify.com';
-  String _userPhone = '+92 300 1234567';
+  // ── Driver Data ──────────────────────────────────────────────
+  String _driverName = 'John Doe';
+  final String driverEmail = 'john.doe@smartparkify.com';
+  String _driverPhone = '+92 300 1234567';
 
-  String get userName => _userName;
-  String get userPhone => _userPhone;
+  String get driverName => _driverName;
+  String get driverPhone => _driverPhone;
 
   // ── Settings ───────────────────────────────────────────────
   bool _isDarkMode = false;
@@ -40,8 +40,8 @@ class ProfileViewModel extends ChangeNotifier {
   }
 
   void updateProfile({required String name, required String phone}) {
-    _userName = name;
-    _userPhone = phone;
+    _driverName = name;
+    _driverPhone = phone;
     notifyListeners();
   }
 }

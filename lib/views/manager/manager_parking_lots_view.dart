@@ -1,25 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../viewmodels/admin_parking_viewmodel.dart';
+import '../../viewmodels/manager_parking_viewmodel.dart';
 
-class AdminParkingLotsView extends StatelessWidget {
-  const AdminParkingLotsView({super.key});
+class ManagerParkingLotsView extends StatelessWidget {
+  const ManagerParkingLotsView({super.key});
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => AdminParkingViewModel(),
-      child: const _AdminParkingLotsBody(),
+      create: (_) => ManagerParkingViewModel(),
+      child: const _ManagerParkingLotsBody(),
     );
   }
 }
 
-class _AdminParkingLotsBody extends StatelessWidget {
-  const _AdminParkingLotsBody();
+class _ManagerParkingLotsBody extends StatelessWidget {
+  const _ManagerParkingLotsBody();
 
   void _showAddEditDialog(
     BuildContext context,
-    AdminParkingViewModel vm, {
+    ManagerParkingViewModel vm, {
     int? index,
   }) {
     final lot = index != null ? vm.parkingLots[index] : null;
@@ -49,7 +49,7 @@ class _AdminParkingLotsBody extends StatelessWidget {
     );
   }
 
-  void _deleteLot(BuildContext context, AdminParkingViewModel vm, int index) {
+  void _deleteLot(BuildContext context, ManagerParkingViewModel vm, int index) {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -79,7 +79,7 @@ class _AdminParkingLotsBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AdminParkingViewModel>(
+    return Consumer<ManagerParkingViewModel>(
       builder: (context, vm, _) {
         return Scaffold(
           body: Container(
@@ -202,7 +202,7 @@ class _AdminParkingLotsBody extends StatelessWidget {
 // ── Parking Lot Card ───────────────────────────────────────
 class _ParkingLotCard extends StatelessWidget {
   final Map<String, dynamic> lot;
-  final AdminParkingViewModel vm;
+  final ManagerParkingViewModel vm;
   final int index;
   final VoidCallback onEdit;
   final VoidCallback onDelete;

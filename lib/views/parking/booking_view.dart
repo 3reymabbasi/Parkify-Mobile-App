@@ -1,17 +1,21 @@
+// lib/views/parking/booking_view.dart  (sirf addActiveBooking call change hui hai, baaki file same)
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:latlong2/latlong.dart';
 import '../../viewmodels/booking_viewmodel.dart';
 import 'booking_confirmation_view.dart';
 
 class BookingView extends StatelessWidget {
   final String parkingName;
   final String price;
+  final LatLng location;
 
   const BookingView({
     super.key,
     required this.parkingName,
     required this.price,
+    required this.location,
   });
 
   @override
@@ -230,46 +234,24 @@ class BookingView extends StatelessWidget {
 
                 const SizedBox(height: 32),
 
-                // Price Breakdown
+                // Price Summary
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF00796B), Color(0xFF004D40)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+                    color: const Color(0xFF0A2540),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Column(
                     children: [
-                      const Text(
-                        'Price Breakdown',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      _buildPriceRow('Hourly Rate', price),
+                      _buildPriceRow('Rate per hour', price),
                       _buildPriceRow(
                         'Duration',
-                        '${vm.selectedDuration} hours',
+                        '${vm.selectedDuration} hour(s)',
                       ),
-                      const Divider(color: Colors.white24),
+                      const Divider(color: Colors.white24, height: 24),
                       _buildPriceRow(
-                        'Subtotal',
-                        'Rs ${vm.calculateSubtotal(price).toStringAsFixed(0)}',
-                      ),
-                      _buildPriceRow(
-                        'Tax (10%)',
-                        'Rs ${vm.calculateTax(price).toStringAsFixed(0)}',
-                      ),
-                      const Divider(color: Colors.white24),
-                      _buildPriceRow(
-                        'Total',
-                        'Rs ${total.toStringAsFixed(0)}',
+                        'Total Amount',
+                        'Rs. ${total.toStringAsFixed(0)}',
                         isTotal: true,
                       ),
                     ],
@@ -325,11 +307,17 @@ class BookingView extends StatelessWidget {
                   height: 58,
                   child: ElevatedButton(
                     onPressed: () {
+                      // Format changed to 'Rs. [amount]' for database/viewmodel state
+                      final String formattedAmount =
+                          'Rs. ${total.toStringAsFixed(0)}';
+
                       vm.addActiveBooking(
                         parkingName: parkingName,
                         date: formattedDate,
                         time: formattedTime,
-                        amount: '₹${total.toStringAsFixed(0)}',
+                        amount: formattedAmount,
+                        latitude: location.latitude,
+                        longitude: location.longitude,
                       );
                       Navigator.pushReplacement(
                         context,
@@ -339,7 +327,8 @@ class BookingView extends StatelessWidget {
                             date: formattedDate,
                             time: formattedTime,
                             slot: 'A-12',
-                            amount: '₹${total.toStringAsFixed(0)}',
+                            amount: formattedAmount,
+                            location: location,
                           ),
                         ),
                       );

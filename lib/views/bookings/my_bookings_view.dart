@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:latlong2/latlong.dart';
 import '../../viewmodels/booking_viewmodel.dart';
 import '../parking/booking_confirmation_view.dart';
 import '../home/home_view.dart';
@@ -102,6 +103,14 @@ class MyBookingsView extends StatelessWidget {
                         padding: const EdgeInsets.only(bottom: 20),
                         itemBuilder: (context, index) {
                           final booking = currentList[index];
+
+                          // Fallback lat/lng agar purani (mock/completed)
+                          // bookings mein ye field na ho.
+                          final double lat =
+                              double.tryParse(booking['lat'] ?? '') ?? 31.5204;
+                          final double lng =
+                              double.tryParse(booking['lng'] ?? '') ?? 74.3587;
+
                           return Container(
                             margin: const EdgeInsets.symmetric(
                               horizontal: 16,
@@ -251,6 +260,7 @@ class MyBookingsView extends StatelessWidget {
                                                 time: booking['time']!,
                                                 slot: booking['slot']!,
                                                 amount: booking['amount']!,
+                                                location: LatLng(lat, lng),
                                               ),
                                         ),
                                       );

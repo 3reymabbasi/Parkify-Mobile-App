@@ -11,7 +11,7 @@ class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  // ── Current logged-in user ─────────────────────────────────
+  // ── Current logged-in driver ─────────────────────────────────
   User? get currentUser => _auth.currentUser;
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
@@ -26,15 +26,15 @@ class AuthService {
         password: password,
       );
 
-      // Check karo yeh admin hai ya normal user
+      // Check karo yeh manager hai ya normal driver
       final doc = await _db
-          .collection('users')
+          .collection('drivers')
           .doc(_auth.currentUser!.uid)
           .get();
       if (doc.exists) {
-        return doc.data()?['role'] ?? 'user';
+        return doc.data()?['role'] ?? 'driver';
       }
-      return 'user';
+      return 'driver';
     } on FirebaseAuthException catch (e) {
       return _handleAuthError(e.code);
     } catch (e) {
@@ -59,14 +59,14 @@ class AuthService {
       // Update display name
       await credential.user!.updateDisplayName(name);
 
-      // Firestore mein user document banao
-      await _db.collection('users').doc(credential.user!.uid).set({
+      // Firestore mein driver document banao
+      await _db.collection('drivers').doc(credential.user!.uid).set({
         'uid': credential.user!.uid,
         'name': name,
         'email': email.trim(),
         'phone': phone,
         'gender': gender,
-        'role': 'user', // default role
+        'role': 'driver', // default role
         'status': 'active',
         'bookings': 0,
         'spent': '0',
@@ -99,11 +99,11 @@ class AuthService {
     }
   }
 
-  // ── Check admin credentials (Admin login ke liye) ──────────
-  Future<bool> isAdmin(String uid) async {
+  // ── Check manager credentials (Manager login ke liye) ──────────
+  Future<bool> isManager(String uid) async {
     try {
-      final doc = await _db.collection('users').doc(uid).get();
-      return doc.data()?['role'] == 'admin';
+      final doc = await _db.collection('drivers').doc(uid).get();
+      return doc.data()?['role'] == 'manager';
     } catch (e) {
       return false;
     }

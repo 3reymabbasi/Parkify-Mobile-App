@@ -12,6 +12,7 @@ class ReportView extends StatefulWidget {
 }
 
 class _ReportViewState extends State<ReportView> {
+  final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _detailedDescriptionController = TextEditingController();
   final _locationController = TextEditingController();
@@ -58,6 +59,23 @@ class _ReportViewState extends State<ReportView> {
     );
   }
 
+  void _submitReport(BuildContext context, ReportViewModel vm) {
+    // Text fields (title, description) validate karo
+    if (!_formKey.currentState!.validate()) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const ReportConfirmationView()),
+    );
+
+    // Saara form state saaf karo taake dobara screen kholne pe
+    // purani photo/text na dikhe
+    vm.reset();
+    _titleController.clear();
+    _detailedDescriptionController.clear();
+    _locationController.clear();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<ReportViewModel>(
@@ -85,131 +103,149 @@ class _ReportViewState extends State<ReportView> {
               ),
             ),
           ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'What issue are you facing?',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                _buildIssueType(vm, 'Technical Issue', Icons.vibration),
-                _buildIssueType(vm, 'Parking Space Full', Icons.local_parking),
-                _buildIssueType(
-                  vm,
-                  'Incorrect Information',
-                  Icons.info_outline,
-                ),
-                _buildIssueType(vm, 'Other', Icons.more_horiz),
-
-                const SizedBox(height: 32),
-
-                _buildTextField(
-                  'Issue Title',
-                  _titleController,
-                  'Briefly describe the issue',
-                ),
-                const SizedBox(height: 20),
-                _buildTextField(
-                  'Detailed Description',
-                  _detailedDescriptionController,
-                  'Tell us more...',
-                  maxLines: 4,
-                ),
-                const SizedBox(height: 20),
-                _buildTextField(
-                  'Location (Optional)',
-                  _locationController,
-                  'e.g., Floor 2, Slot B-4',
-                ),
-
-                const SizedBox(height: 32),
-
-                const Text(
-                  'Attach Photo (Optional)',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                GestureDetector(
-                  onTap: () => _showImageSourceActionSheet(context, vm),
-                  child: Container(
-                    height: 160,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.grey.shade300),
+          body: Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'What issue are you facing?',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
                     ),
-                    child: vm.image == null
-                        ? const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.add_a_photo,
-                                size: 40,
-                                color: Color(0xFF00796B),
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                'Add Image',
-                                style: TextStyle(color: Colors.black),
-                              ),
-                            ],
-                          )
-                        : ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: Image.file(vm.image!, fit: BoxFit.cover),
-                          ),
                   ),
-                ),
+                  const SizedBox(height: 20),
 
-                const SizedBox(height: 48),
+                  _buildIssueType(vm, 'Technical Issue', Icons.vibration),
+                  _buildIssueType(
+                    vm,
+                    'Parking Space Full',
+                    Icons.local_parking,
+                  ),
+                  _buildIssueType(
+                    vm,
+                    'Incorrect Information',
+                    Icons.info_outline,
+                  ),
+                  _buildIssueType(vm, 'Other', Icons.more_horiz),
 
-                SizedBox(
-                  width: double.infinity,
-                  height: 58,
-                  child: ElevatedButton(
-                    onPressed: vm.canSubmit
-                        ? () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const ReportConfirmationView(),
-                              ),
-                            );
-                          }
-                        : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF00796B),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      elevation: 4,
+                  const SizedBox(height: 32),
+
+                  _buildTextField(
+                    'Issue Title',
+                    _titleController,
+                    'Briefly describe the issue',
+                    validator: (val) {
+                      if (val == null || val.trim().isEmpty) {
+                        return 'Please enter a title';
+                      }
+                      if (val.trim().length < 4) {
+                        return 'Title is too short';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  _buildTextField(
+                    'Detailed Description',
+                    _detailedDescriptionController,
+                    'Tell us more...',
+                    maxLines: 4,
+                    validator: (val) {
+                      if (val == null || val.trim().isEmpty) {
+                        return 'Please add a description';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  _buildTextField(
+                    'Location (Optional)',
+                    _locationController,
+                    'e.g., Floor 2, Slot B-4',
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  const Text(
+                    'Attach Photo (Optional)',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
                     ),
-                    child: const Text(
-                      'Submit Report',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                  ),
+                  const SizedBox(height: 12),
+                  GestureDetector(
+                    onTap: () => _showImageSourceActionSheet(context, vm),
+                    child: Container(
+                      height: 160,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
                         color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.grey.shade300),
+                      ),
+                      child: vm.imageBytes == null
+                          ? const Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.add_a_photo,
+                                  size: 40,
+                                  color: Color(0xFF00796B),
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  'Add Image',
+                                  style: TextStyle(color: Colors.black),
+                                ),
+                              ],
+                            )
+                          : ClipRRect(
+                              borderRadius: BorderRadius.circular(16),
+                              child: Image.memory(
+                                vm.imageBytes!,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 48),
+
+                  SizedBox(
+                    width: double.infinity,
+                    height: 58,
+                    child: ElevatedButton(
+                      onPressed: vm.canSubmit
+                          ? () => _submitReport(context, vm)
+                          : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF00796B),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        elevation: 4,
+                      ),
+                      child: const Text(
+                        'Submit Report',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 40),
-              ],
+                  const SizedBox(height: 40),
+                ],
+              ),
             ),
           ),
         );
@@ -263,6 +299,7 @@ class _ReportViewState extends State<ReportView> {
     TextEditingController controller,
     String hint, {
     int maxLines = 1,
+    String? Function(String?)? validator,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -276,9 +313,10 @@ class _ReportViewState extends State<ReportView> {
           ),
         ),
         const SizedBox(height: 8),
-        TextField(
+        TextFormField(
           controller: controller,
           maxLines: maxLines,
+          validator: validator,
           style: const TextStyle(color: Colors.black),
           decoration: InputDecoration(
             hintText: hint,
@@ -288,6 +326,18 @@ class _ReportViewState extends State<ReportView> {
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: Colors.grey.shade300),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey.shade300),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFF00796B), width: 2),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Colors.red, width: 2),
             ),
           ),
         ),

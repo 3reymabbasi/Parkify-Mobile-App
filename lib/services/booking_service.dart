@@ -26,7 +26,7 @@ class BookingService {
   }) async {
     try {
       final docRef = await _db.collection('bookings').add({
-        'userId': _uid,
+        'driverId': _uid,
         'parkingName': parkingName,
         'address': address,
         'date': date,
@@ -38,8 +38,8 @@ class BookingService {
         'createdAt': FieldValue.serverTimestamp(),
       });
 
-      // User ka booking count update karo
-      await _db.collection('users').doc(_uid).update({
+      // Driver ka booking count update karo
+      await _db.collection('drivers').doc(_uid).update({
         'bookings': FieldValue.increment(1),
         'lastBooking': date,
       });
@@ -50,11 +50,11 @@ class BookingService {
     }
   }
 
-  // ── GET USER KI ACTIVE BOOKINGS ─────────────────────────────
+  // ── GET DRIVER KI ACTIVE BOOKINGS ─────────────────────────────
   Stream<List<Booking>> getActiveBookings() {
     return _db
         .collection('bookings')
-        .where('userId', isEqualTo: _uid)
+        .where('driverId', isEqualTo: _uid)
         .where('status', isEqualTo: 'Active')
         .orderBy('createdAt', descending: true)
         .snapshots()
@@ -75,11 +75,11 @@ class BookingService {
         );
   }
 
-  // ── GET USER KI COMPLETED BOOKINGS ─────────────────────────
+  // ── GET DRIVER KI COMPLETED BOOKINGS ─────────────────────────
   Stream<List<Booking>> getCompletedBookings() {
     return _db
         .collection('bookings')
-        .where('userId', isEqualTo: _uid)
+        .where('driverId', isEqualTo: _uid)
         .where('status', isEqualTo: 'Completed')
         .orderBy('createdAt', descending: true)
         .snapshots()
@@ -112,7 +112,7 @@ class BookingService {
     }
   }
 
-  // ── COMPLETE BOOKING (Admin use karta hai) ─────────────────
+  // ── COMPLETE BOOKING (Manager use karta hai) ─────────────────
   Future<bool> completeBooking(String bookingId) async {
     try {
       await _db.collection('bookings').doc(bookingId).update({
@@ -124,8 +124,8 @@ class BookingService {
     }
   }
 
-  // ── ADMIN: SAARI BOOKINGS GET KARO ─────────────────────────
-  Stream<List<Map<String, dynamic>>> getAllBookingsForAdmin() {
+  // ── MANAGER: SAARI BOOKINGS GET KARO ─────────────────────────
+  Stream<List<Map<String, dynamic>>> getAllBookingsForManager() {
     return _db
         .collection('bookings')
         .orderBy('createdAt', descending: true)

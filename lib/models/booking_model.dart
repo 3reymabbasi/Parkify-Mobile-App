@@ -6,7 +6,9 @@ class Booking {
   final String time;
   final String slot;
   final String amount;
-  final String status; // Active, Upcoming, Completed
+  final String
+  paymentMethod; // Cash on Arrival, Bank Transfer, EasyPaisa / JazzCash
+  final String status; // Active, Upcoming, Completed, Cancelled
 
   Booking({
     required this.id,
@@ -16,10 +18,10 @@ class Booking {
     required this.time,
     required this.slot,
     required this.amount,
+    this.paymentMethod = 'Cash on Arrival',
     this.status = 'Active',
   });
 
-  /// Create Booking from a Map (used in BookingData / BookingViewModel)
   factory Booking.fromMap(Map<String, String> map) {
     return Booking(
       id: map['id'] ?? '',
@@ -29,6 +31,7 @@ class Booking {
       time: map['time'] ?? '',
       slot: map['slot'] ?? '',
       amount: map['amount'] ?? '',
+      paymentMethod: map['paymentMethod'] ?? 'Cash on Arrival',
       status: map['status'] ?? 'Active',
     );
   }
@@ -42,6 +45,7 @@ class Booking {
       'time': time,
       'slot': slot,
       'amount': amount,
+      'paymentMethod': paymentMethod,
       'status': status,
     };
   }

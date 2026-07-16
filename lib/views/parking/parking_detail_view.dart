@@ -1,3 +1,4 @@
+// lib/views/parking/parking_detail_view.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -58,6 +59,7 @@ class ParkingDetailView extends StatelessWidget {
                   TileLayer(
                     urlTemplate:
                         'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    userAgentPackageName: 'com.smartparkify.app',
                   ),
                   MarkerLayer(
                     markers: [
@@ -203,7 +205,7 @@ class ParkingDetailView extends StatelessWidget {
                             color: isAvailable
                                 ? const Color(0xFF00BFA5)
                                 : Colors.red.shade400,
-                            minHeight: 10,
+                            minHeight: 8,
                           ),
                         ),
                       ],
@@ -212,28 +214,16 @@ class ParkingDetailView extends StatelessWidget {
 
                   const SizedBox(height: 28),
 
+                  // Description
                   const Text(
-                    'Amenities',
+                    'About',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildAmenity(Icons.security, 'Security'),
-                      _buildAmenity(Icons.wifi, 'WiFi'),
-                      _buildAmenity(Icons.camera_alt, 'CCTV'),
-                      _buildAmenity(Icons.access_time_filled, '24/7'),
-                    ],
-                  ),
-
-                  const SizedBox(height: 32),
-
-                  // Description
+                  const SizedBox(height: 12),
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
@@ -317,7 +307,9 @@ class ParkingDetailView extends StatelessWidget {
 
                   const SizedBox(height: 40),
 
-                  // Book Now Button
+                  // Book Now Button (Get Directions yahan se hata diya —
+                  // booking confirm hone ke baad Booking Confirmation screen
+                  // par milega, kyunke tab tak koi slot reserve hi nahi hua)
                   SizedBox(
                     width: double.infinity,
                     height: 58,
@@ -330,6 +322,7 @@ class ParkingDetailView extends StatelessWidget {
                                   builder: (context) => BookingView(
                                     parkingName: name,
                                     price: price,
+                                    location: location,
                                   ),
                                 ),
                               );

@@ -1,3 +1,4 @@
+// lib/viewmodels/booking_viewmodel.dart
 import 'package:flutter/material.dart';
 
 class BookingViewModel extends ChangeNotifier {
@@ -59,20 +60,36 @@ class BookingViewModel extends ChangeNotifier {
       calculateSubtotal(price) + calculateTax(price);
 
   // ── Add booking to active list ─────────────────────────────
+  // latitude/longitude ab yahan store karte hain taake baad mein
+  // "Get Directions" ke liye My Bookings se bhi use ho sakein.
   void addActiveBooking({
     required String parkingName,
     required String date,
     required String time,
     required String amount,
+    required double latitude,
+    required double longitude,
   }) {
+    final id = 'BK${DateTime.now().millisecondsSinceEpoch}';
     _activeBookings.add({
+      'id': id,
       'location': parkingName,
       'address': '123 Main Street, City Center',
       'date': date,
       'time': time,
       'slot': 'A-12',
       'amount': amount,
+      'paymentMethod': _selectedPayment,
+      'status': 'Active',
+      'lat': latitude.toString(),
+      'lng': longitude.toString(),
     });
+    notifyListeners();
+  }
+
+  // ── Cancel a booking (moves it out of the active list) ─────
+  void cancelBooking(String id) {
+    _activeBookings.removeWhere((b) => b['id'] == id);
     notifyListeners();
   }
 

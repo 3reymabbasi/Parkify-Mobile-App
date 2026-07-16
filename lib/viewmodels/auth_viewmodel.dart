@@ -6,7 +6,7 @@ class AuthViewModel extends ChangeNotifier {
   bool _loading = false;
   String? _emailError;
   String? _passwordError;
-  bool _isAdminMode = false;
+  bool _isManagerMode = false;
 
   // Register state
   String? _nameError;
@@ -20,7 +20,7 @@ class AuthViewModel extends ChangeNotifier {
   bool get loading => _loading;
   String? get emailError => _emailError;
   String? get passwordError => _passwordError;
-  bool get isAdminMode => _isAdminMode;
+  bool get isManagerMode => _isManagerMode;
 
   String? get nameError => _nameError;
   String? get phoneError => _phoneError;
@@ -34,8 +34,8 @@ class AuthViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setAdminMode(bool isAdmin) {
-    _isAdminMode = isAdmin;
+  void setManagerMode(bool isManager) {
+    _isManagerMode = isManager;
     notifyListeners();
   }
 
@@ -64,7 +64,7 @@ class AuthViewModel extends ChangeNotifier {
     return valid;
   }
 
-  /// Returns 'admin' | 'user' | null (null = invalid)
+  /// Returns 'manager' | 'driver' | null (null = invalid)
   Future<String?> login(String email, String password) async {
     if (!validateLogin(email, password)) return null;
 
@@ -76,13 +76,13 @@ class AuthViewModel extends ChangeNotifier {
     _loading = false;
     notifyListeners();
 
-    if (_isAdminMode) {
-      if (email == 'admin@smartparkify.com' && password == 'admin123') {
-        return 'admin';
+    if (_isManagerMode) {
+      if (email == 'manager@smartparkify.com' && password == 'manager123') {
+        return 'manager';
       }
-      return null; // invalid admin credentials
+      return null; // invalid manager credentials
     }
-    return 'user';
+    return 'driver';
   }
 
   // ── Register Methods ───────────────────────────────────────

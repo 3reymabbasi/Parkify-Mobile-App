@@ -1,13 +1,13 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ReportViewModel extends ChangeNotifier {
   String _selectedType = '';
-  File? _image;
+  Uint8List? _imageBytes;
 
   String get selectedType => _selectedType;
-  File? get image => _image;
+  Uint8List? get imageBytes => _imageBytes;
   bool get canSubmit => _selectedType.isNotEmpty;
 
   void selectType(String type) {
@@ -19,18 +19,19 @@ class ReportViewModel extends ChangeNotifier {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(
       source: source,
-      maxWidth: 5000,
-      maxHeight: 5000,
+      maxWidth: 1600,
+      maxHeight: 1600,
+      imageQuality: 85,
     );
     if (pickedFile != null) {
-      _image = File(pickedFile.path);
+      _imageBytes = await pickedFile.readAsBytes();
       notifyListeners();
     }
   }
 
   void reset() {
     _selectedType = '';
-    _image = null;
+    _imageBytes = null;
     notifyListeners();
   }
 }

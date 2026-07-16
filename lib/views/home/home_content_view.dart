@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../parking/find_parking_view.dart';
 import '../bookings/my_bookings_view.dart';
+import '../notifications/notifications_view.dart';
 
 class HomeContentView extends StatelessWidget {
   const HomeContentView({super.key});
@@ -37,7 +38,7 @@ class HomeContentView extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: const [
                           Text(
-                            'Hello, User 👋',
+                            'Hello, Driver 👋',
                             style: TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.bold,
@@ -60,7 +61,14 @@ class HomeContentView extends StatelessWidget {
                           color: Colors.white,
                           size: 28,
                         ),
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const NotificationsView(),
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -112,7 +120,7 @@ class HomeContentView extends StatelessWidget {
                     Icons.attach_money,
                     const Color(0xFF7B1FA2),
                     'Total Spent',
-                    r'$340',
+                    r'Rs.340',
                   ),
                 ],
               ),
@@ -188,21 +196,21 @@ class HomeContentView extends StatelessWidget {
 
             _buildParkingCard(
               'Central Mall Parking',
-              '₹50/hr',
+              'Rs.50/hr',
               '0.5 km',
               '12/50',
               const Color(0xFF00BFA5),
             ),
             _buildParkingCard(
               'City Plaza Parking',
-              '₹40/hr',
+              'Rs.40/hr',
               '1.2 km',
               '8/40',
               const Color(0xFF00796B),
             ),
             _buildParkingCard(
               'Metro Station P1',
-              '₹30/hr',
+              'Rs.30/hr',
               '2.0 km',
               '25/100',
               const Color(0xFF1976D2),

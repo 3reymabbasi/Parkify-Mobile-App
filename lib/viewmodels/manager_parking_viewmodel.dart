@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class AdminParkingViewModel extends ChangeNotifier {
+class ManagerParkingViewModel extends ChangeNotifier {
   final List<Map<String, dynamic>> _parkingLots = [
     {
       "name": "Central Mall Parking",
@@ -84,14 +84,14 @@ class AdminParkingViewModel extends ChangeNotifier {
   }
 }
 
-class AdminBookingsViewModel extends ChangeNotifier {
+class ManagerBookingsViewModel extends ChangeNotifier {
   String _selectedTab = "All";
   String get selectedTab => _selectedTab;
 
   final List<Map<String, dynamic>> _allBookings = [
     {
       "id": "BK-2026-001234",
-      "user": "Ahmed Khan",
+      "driver": "Ahmed Khan",
       "parking": "Central Mall Parking - Slot A-12",
       "date": "May 3, 2026",
       "time": "09:00 AM - 12:00 PM",
@@ -102,7 +102,7 @@ class AdminBookingsViewModel extends ChangeNotifier {
     },
     {
       "id": "BK-2026-001235",
-      "user": "Sarah Ali",
+      "driver": "Sarah Ali",
       "parking": "City Plaza Parking - Slot B-25",
       "date": "May 3, 2026",
       "time": "10:00 AM - 02:00 PM",
@@ -113,7 +113,7 @@ class AdminBookingsViewModel extends ChangeNotifier {
     },
     {
       "id": "BK-2026-001236",
-      "user": "Bilal Ahmed",
+      "driver": "Bilal Ahmed",
       "parking": "Metro Station Parking - Slot C-08",
       "date": "May 3, 2026",
       "time": "03:00 PM - 06:00 PM",

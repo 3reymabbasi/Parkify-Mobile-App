@@ -20,10 +20,10 @@ class _FindParkingViewState extends State<FindParkingView> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final vm = context.read<FindParkingViewModel>();
-      vm.getUserLocation(context).then((_) {
-        if (vm.userLocation != null && mounted) {
+      vm.getDriverLocation(context).then((_) {
+        if (vm.driverLocation != null && mounted) {
           Future.delayed(const Duration(milliseconds: 300), () {
-            if (mounted) _mapController.move(vm.userLocation!, 15.5);
+            if (mounted) _mapController.move(vm.driverLocation!, 15.5);
           });
         }
         if (vm.locationError != null && mounted) {
@@ -71,9 +71,9 @@ class _FindParkingViewState extends State<FindParkingView> {
                   ),
                   MarkerLayer(
                     markers: [
-                      if (vm.userLocation != null)
+                      if (vm.driverLocation != null)
                         Marker(
-                          point: vm.userLocation!,
+                          point: vm.driverLocation!,
                           width: 35,
                           height: 35,
                           child: const Icon(
@@ -272,7 +272,7 @@ class _FindParkingViewState extends State<FindParkingView> {
                 right: 20,
                 child: FloatingActionButton(
                   mini: true,
-                  onPressed: () => vm.getUserLocation(context),
+                  onPressed: () => vm.getDriverLocation(context),
                   backgroundColor: const Color(0xFF00BFA5),
                   child: vm.loadingLocation
                       ? const SizedBox(

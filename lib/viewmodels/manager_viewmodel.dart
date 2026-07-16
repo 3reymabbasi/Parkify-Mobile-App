@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import '../models/user_model.dart';
+import '../models/driver_model.dart';
 
-class AdminViewModel extends ChangeNotifier {
+class ManagerViewModel extends ChangeNotifier {
   String _selectedTab = 'All';
   String get selectedTab => _selectedTab;
 
-  final List<UserModel> _users = [
-    UserModel(
+  final List<DriverModel> _drivers = [
+    DriverModel(
       initials: 'AK',
       name: 'Ahmed Khan',
       email: 'ahmed.khan@email.com',
@@ -17,7 +17,7 @@ class AdminViewModel extends ChangeNotifier {
       lastBooking: 'May 2',
       status: 'active',
     ),
-    UserModel(
+    DriverModel(
       initials: 'SA',
       name: 'Sarah Ali',
       email: 'sarah.ali@email.com',
@@ -28,7 +28,7 @@ class AdminViewModel extends ChangeNotifier {
       lastBooking: 'May 1',
       status: 'active',
     ),
-    UserModel(
+    DriverModel(
       initials: 'FN',
       name: 'Fatima Noor',
       email: 'fatima.noor@email.com',
@@ -39,7 +39,7 @@ class AdminViewModel extends ChangeNotifier {
       lastBooking: 'April 28',
       status: 'active',
     ),
-    UserModel(
+    DriverModel(
       initials: 'IB',
       name: 'Imran Baig',
       email: 'imran.baig@email.com',
@@ -50,7 +50,7 @@ class AdminViewModel extends ChangeNotifier {
       lastBooking: 'April 20',
       status: 'suspended',
     ),
-    UserModel(
+    DriverModel(
       initials: 'AN',
       name: 'Arsalan Naseer',
       email: 'arsalan.nas@email.com',
@@ -61,7 +61,7 @@ class AdminViewModel extends ChangeNotifier {
       lastBooking: 'April 20',
       status: 'active',
     ),
-    UserModel(
+    DriverModel(
       initials: 'MF',
       name: 'Mahir Fareed',
       email: 'maahir@email.com',
@@ -74,9 +74,9 @@ class AdminViewModel extends ChangeNotifier {
     ),
   ];
 
-  List<UserModel> get filteredUsers {
-    if (_selectedTab == 'All') return _users;
-    return _users.where((u) => u.status == _selectedTab.toLowerCase()).toList();
+  List<DriverModel> get filteredDrivers {
+    if (_selectedTab == 'All') return _drivers;
+    return _drivers.where((u) => u.status == _selectedTab.toLowerCase()).toList();
   }
 
   void setTab(String tab) {
@@ -84,10 +84,10 @@ class AdminViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void suspendUser(int globalIndex) {
-    _users[globalIndex].status = 'suspended';
+  void suspendDriver(int globalIndex) {
+    _drivers[globalIndex].status = 'suspended';
     notifyListeners();
   }
 
-  int globalIndexOf(UserModel user) => _users.indexOf(user);
+  int globalIndexOf(DriverModel driver) => _drivers.indexOf(driver);
 }

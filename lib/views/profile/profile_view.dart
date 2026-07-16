@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/routes.dart';
 import '../../viewmodels/profile_viewmodel.dart';
+import '../feedback/feedback_view.dart';
 
 class ProfileView extends StatefulWidget {
   const ProfileView({super.key});
@@ -18,8 +20,8 @@ class _ProfileViewState extends State<ProfileView> {
   void initState() {
     super.initState();
     final vm = context.read<ProfileViewModel>();
-    _nameController = TextEditingController(text: vm.userName);
-    _phoneController = TextEditingController(text: vm.userPhone);
+    _nameController = TextEditingController(text: vm.driverName);
+    _phoneController = TextEditingController(text: vm.driverPhone);
   }
 
   @override
@@ -41,7 +43,7 @@ class _ProfileViewState extends State<ProfileView> {
               physics: const BouncingScrollPhysics(),
               child: Column(
                 children: [
-                  _buildUserHeader(vm),
+                  _buildDriverHeader(vm),
                   const SizedBox(height: 8),
                   _buildSectionCard(
                     vm,
@@ -51,7 +53,7 @@ class _ProfileViewState extends State<ProfileView> {
                         vm,
                         icon: Icons.person_outline_rounded,
                         title: 'Edit Profile',
-                        subtitle: vm.userName,
+                        subtitle: vm.driverName,
                         onTap: () => _showEditProfile(context, vm),
                       ),
                       _buildDivider(vm),
@@ -77,6 +79,19 @@ class _ProfileViewState extends State<ProfileView> {
                     vm,
                     title: 'Support',
                     children: [
+                      _buildOptionTile(
+                        vm,
+                        icon: Icons.feedback_outlined,
+                        title: 'Give Feedback',
+                        subtitle: 'Tell us what you think',
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const FeedbackView(),
+                          ),
+                        ),
+                      ),
+                      _buildDivider(vm),
                       _buildOptionTile(
                         vm,
                         icon: Icons.help_outline_rounded,
@@ -168,8 +183,8 @@ class _ProfileViewState extends State<ProfileView> {
     );
   }
 
-  // ── User Header ────────────────────────────────────────────
-  Widget _buildUserHeader(ProfileViewModel vm) {
+  // ── Driver Header ────────────────────────────────────────────
+  Widget _buildDriverHeader(ProfileViewModel vm) {
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       padding: const EdgeInsets.all(24),
@@ -226,7 +241,7 @@ class _ProfileViewState extends State<ProfileView> {
           ),
           const SizedBox(height: 14),
           Text(
-            vm.userName,
+            vm.driverName,
             style: const TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
@@ -236,12 +251,12 @@ class _ProfileViewState extends State<ProfileView> {
           ),
           const SizedBox(height: 4),
           Text(
-            vm.userEmail,
+            vm.driverEmail,
             style: const TextStyle(fontSize: 13, color: Colors.white70),
           ),
           const SizedBox(height: 4),
           Text(
-            vm.userPhone,
+            vm.driverPhone,
             style: const TextStyle(fontSize: 13, color: Colors.white60),
           ),
           const SizedBox(height: 20),
@@ -476,8 +491,8 @@ class _ProfileViewState extends State<ProfileView> {
 
   // ── Dialogs & Sheets ───────────────────────────────────────
   void _showEditProfile(BuildContext context, ProfileViewModel vm) {
-    _nameController.text = vm.userName;
-    _phoneController.text = vm.userPhone;
+    _nameController.text = vm.driverName;
+    _phoneController.text = vm.driverPhone;
 
     showModalBottomSheet(
       context: context,
@@ -836,7 +851,7 @@ class _ProfileViewState extends State<ProfileView> {
               _termItem(
                 vm,
                 '2',
-                'Users must follow all parking rules and regulations.',
+                'Drivers must follow all parking rules and regulations.',
               ),
               _termItem(
                 vm,
@@ -1064,13 +1079,12 @@ class _ProfileViewState extends State<ProfileView> {
               ),
             ),
             onPressed: () {
-              Navigator.pop(ctx);
-              _showSnackBar(
+              Navigator.pop(ctx); // dialog band karo
+
+              // Poora navigation stack saaf karke Login page pe le jao
+              Navigator.of(
                 context,
-                vm,
-                'Logged out successfully',
-                isSuccess: true,
-              );
+              ).pushNamedAndRemoveUntil(AppRoutes.login, (route) => false);
             },
             child: const Text(
               'Logout',

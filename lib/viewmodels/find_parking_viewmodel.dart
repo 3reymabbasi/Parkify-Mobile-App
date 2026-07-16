@@ -4,11 +4,11 @@ import 'package:latlong2/latlong.dart';
 import '../models/parking_spot_model.dart';
 
 class FindParkingViewModel extends ChangeNotifier {
-  LatLng? _userLocation;
+  LatLng? _driverLocation;
   bool _loadingLocation = false;
   String? _locationError;
 
-  LatLng? get userLocation => _userLocation;
+  LatLng? get driverLocation => _driverLocation;
   bool get loadingLocation => _loadingLocation;
   String? get locationError => _locationError;
 
@@ -62,7 +62,7 @@ class FindParkingViewModel extends ChangeNotifier {
     _sortedSpots = List.from(_allSpots);
   }
 
-  Future<void> getUserLocation(BuildContext context) async {
+  Future<void> getDriverLocation(BuildContext context) async {
     _loadingLocation = true;
     _locationError = null;
     notifyListeners();
@@ -94,7 +94,7 @@ class FindParkingViewModel extends ChangeNotifier {
         ),
       );
 
-      _userLocation = LatLng(position.latitude, position.longitude);
+      _driverLocation = LatLng(position.latitude, position.longitude);
       _loadingLocation = false;
       notifyListeners();
 
@@ -107,7 +107,7 @@ class FindParkingViewModel extends ChangeNotifier {
   }
 
   void _updateDistancesAndSort() {
-    if (_userLocation == null) return;
+    if (_driverLocation == null) return;
 
     final distance = Distance();
     _sortedSpots = List.from(_allSpots);
@@ -115,12 +115,12 @@ class FindParkingViewModel extends ChangeNotifier {
     _sortedSpots.sort((a, b) {
       final distA = distance.as(
         LengthUnit.Kilometer,
-        _userLocation!,
+        _driverLocation!,
         a.location,
       );
       final distB = distance.as(
         LengthUnit.Kilometer,
-        _userLocation!,
+        _driverLocation!,
         b.location,
       );
       return distA.compareTo(distB);
@@ -129,7 +129,7 @@ class FindParkingViewModel extends ChangeNotifier {
     for (var spot in _sortedSpots) {
       final dist = distance.as(
         LengthUnit.Kilometer,
-        _userLocation!,
+        _driverLocation!,
         spot.location,
       );
       spot.distance = '${dist.toStringAsFixed(1)} km';

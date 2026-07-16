@@ -6,9 +6,10 @@ import 'viewmodels/auth_viewmodel.dart';
 import 'viewmodels/booking_viewmodel.dart';
 import 'viewmodels/profile_viewmodel.dart';
 import 'viewmodels/report_viewmodel.dart';
+import 'viewmodels/feedback_viewmodel.dart';
 import 'viewmodels/find_parking_viewmodel.dart';
-import 'viewmodels/admin_viewmodel.dart';
-import 'viewmodels/admin_parking_viewmodel.dart';
+import 'viewmodels/manager_viewmodel.dart';
+import 'viewmodels/manager_parking_viewmodel.dart';
 
 void main() {
   runApp(const MyApp());
@@ -25,10 +26,11 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => BookingViewModel()),
         ChangeNotifierProvider(create: (_) => ProfileViewModel()),
         ChangeNotifierProvider(create: (_) => ReportViewModel()),
+        ChangeNotifierProvider(create: (_) => FeedbackViewModel()),
         ChangeNotifierProvider(create: (_) => FindParkingViewModel()),
-        ChangeNotifierProvider(create: (_) => AdminViewModel()),
-        ChangeNotifierProvider(create: (_) => AdminParkingViewModel()),
-        ChangeNotifierProvider(create: (_) => AdminBookingsViewModel()),
+        ChangeNotifierProvider(create: (_) => ManagerViewModel()),
+        ChangeNotifierProvider(create: (_) => ManagerParkingViewModel()),
+        ChangeNotifierProvider(create: (_) => ManagerBookingsViewModel()),
       ],
       child: MaterialApp(
         title: 'SmartParkify',
