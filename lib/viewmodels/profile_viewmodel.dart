@@ -1,22 +1,24 @@
 import 'package:flutter/material.dart';
+import '../services/driver_service.dart';
 
 class ProfileViewModel extends ChangeNotifier {
-  // ── Driver Data ──────────────────────────────────────────────
-  String _driverName = 'John Doe';
-  final String driverEmail = 'john.doe@smartparkify.com';
-  String _driverPhone = '+92 300 1234567';
+  final DriverService _driverService = DriverService();
 
-  String get driverName => _driverName;
-  String get driverPhone => _driverPhone;
+  String _driverName = 'Loading...';
+  String _driverEmail = '';
+  String _driverPhone = '';
+  bool _loading = false;
 
-  // ── Settings ───────────────────────────────────────────────
   bool _isDarkMode = false;
   bool _notificationsOn = true;
 
+  String get driverName => _driverName;
+  String get driverEmail => _driverEmail;
+  String get driverPhone => _driverPhone;
+  bool get loading => _loading;
   bool get isDarkMode => _isDarkMode;
   bool get notificationsOn => _notificationsOn;
 
-  // ── Theme colors (derived) ─────────────────────────────────
   Color get bgColor =>
       _isDarkMode ? const Color(0xFF0F0F0F) : const Color(0xFFF4F6F8);
   Color get textColor => _isDarkMode ? Colors.white : const Color(0xFF1A1A2E);
@@ -28,7 +30,26 @@ class ProfileViewModel extends ChangeNotifier {
   static const Color primaryDark = Color(0xFF004D40);
   static const Color accent = Color(0xFF00BFA5);
 
-  // ── Actions ────────────────────────────────────────────────
+  // ── Load profile from Firestore ────────────────────────────
+  Future<void> loadProfile() async {
+    _loading = true;
+    notifyListeners();
+
+    try {
+      final data = await _driverService.getDriverProfile();
+      if (data != null) {
+        _driverName = data['name']?.toString() ?? 'Driver';
+        _driverEmail = data['email']?.toString() ?? '';
+        _driverPhone = data['phone']?.toString() ?? '';
+      }
+    } catch (e) {
+      // keep defaults
+    }
+
+    _loading = false;
+    notifyListeners();
+  }
+
   void toggleDarkMode() {
     _isDarkMode = !_isDarkMode;
     notifyListeners();
@@ -39,9 +60,25 @@ class ProfileViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateProfile({required String name, required String phone}) {
-    _driverName = name;
-    _driverPhone = phone;
+  Future<bool> updateProfile({
+    required String name,
+    required String phone,
+  }) async {
+    _loading = true;
     notifyListeners();
+
+    final success = await _driverService.updateProfile(
+      name: name,
+      phone: phone,
+    );
+
+    if (success) {
+      _driverName = name;
+      _driverPhone = phone;
+    }
+
+    _loading = false;
+    notifyListeners();
+    return success;
   }
 }

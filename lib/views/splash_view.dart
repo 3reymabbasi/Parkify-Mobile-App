@@ -93,7 +93,7 @@ class _SplashViewState extends State<SplashView>
               ),
               const SizedBox(height: 32),
               const Text(
-                'SmartParkify',
+                'Parkify',
                 style: TextStyle(
                   fontSize: 42,
                   fontWeight: FontWeight.w700,
@@ -102,7 +102,7 @@ class _SplashViewState extends State<SplashView>
                 ),
               ),
               const Text(
-                'Your Smart Parking Solution',
+                'Your Parking Solution',
                 style: TextStyle(
                   fontSize: 18,
                   color: Colors.white70,

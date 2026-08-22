@@ -1,17 +1,19 @@
-// lib/viewmodels/booking_viewmodel.dart
 import 'package:flutter/material.dart';
+import '../services/booking_service.dart';
+import '../models/booking_model.dart';
 
 class BookingViewModel extends ChangeNotifier {
-  // ── Shared booking lists (in-memory state) ─────────────────
-  final List<Map<String, String>> _activeBookings = [];
-  final List<Map<String, String>> _completedBookings = [];
+  final BookingService _bookingService = BookingService();
 
-  List<Map<String, String>> get activeBookings =>
-      List.unmodifiable(_activeBookings);
-  List<Map<String, String>> get completedBookings =>
-      List.unmodifiable(_completedBookings);
+  List<Booking> _activeBookings = [];
+  List<Booking> _completedBookings = [];
+  bool _loading = false;
 
-  // ── Booking form state ─────────────────────────────────────
+  List<Booking> get activeBookings => List.unmodifiable(_activeBookings);
+  List<Booking> get completedBookings => List.unmodifiable(_completedBookings);
+  bool get loading => _loading;
+
+  // Form state
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _selectedTime = const TimeOfDay(hour: 9, minute: 0);
   int _selectedDuration = 2;
@@ -44,7 +46,6 @@ class BookingViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ── Price calculation ──────────────────────────────────────
   double calculateSubtotal(String price) {
     final hourlyRate =
         double.tryParse(
@@ -59,41 +60,74 @@ class BookingViewModel extends ChangeNotifier {
   double calculateTotal(String price) =>
       calculateSubtotal(price) + calculateTax(price);
 
-  // ── Add booking to active list ─────────────────────────────
-  // latitude/longitude ab yahan store karte hain taake baad mein
-  // "Get Directions" ke liye My Bookings se bhi use ho sakein.
-  void addActiveBooking({
+  // ── Real Firebase Booking ─────────────────────────────────
+  Future<String?> addActiveBooking({
     required String parkingName,
+    required String address,
     required String date,
     required String time,
     required String amount,
     required double latitude,
     required double longitude,
-  }) {
-    final id = 'BK${DateTime.now().millisecondsSinceEpoch}';
-    _activeBookings.add({
-      'id': id,
-      'location': parkingName,
-      'address': '123 Main Street, City Center',
-      'date': date,
-      'time': time,
-      'slot': 'A-12',
-      'amount': amount,
-      'paymentMethod': _selectedPayment,
-      'status': 'Active',
-      'lat': latitude.toString(),
-      'lng': longitude.toString(),
+  }) async {
+    _loading = true;
+    notifyListeners();
+
+    try {
+      final bookingId = await _bookingService.addBooking(
+        parkingName: parkingName,
+        address: address.isNotEmpty ? address : 'Parking Location',
+        date: date,
+        time: time,
+        slot: 'A-${DateTime.now().millisecond % 40 + 1}',
+        amount: amount,
+        paymentMethod: _selectedPayment,
+      );
+
+      _loading = false;
+      notifyListeners();
+
+      if (bookingId != null) {
+        // Refresh list
+        listenActiveBookings();
+        return bookingId;
+      }
+      return null;
+    } catch (e) {
+      _loading = false;
+      notifyListeners();
+      return null;
+    }
+  }
+
+  Future<bool> cancelBooking(String id) async {
+    final success = await _bookingService.cancelBooking(id);
+    if (success) {
+      _activeBookings.removeWhere((b) => b.id == id);
+      notifyListeners();
+    }
+    return success;
+  }
+
+  void listenActiveBookings() {
+    _bookingService.getActiveBookings().listen((list) {
+      _activeBookings = list;
+      notifyListeners();
     });
-    notifyListeners();
   }
 
-  // ── Cancel a booking (moves it out of the active list) ─────
-  void cancelBooking(String id) {
-    _activeBookings.removeWhere((b) => b['id'] == id);
-    notifyListeners();
+  void listenCompletedBookings() {
+    _bookingService.getCompletedBookings().listen((list) {
+      _completedBookings = list;
+      notifyListeners();
+    });
   }
 
-  // ── Reset booking form ─────────────────────────────────────
+  void loadBookings() {
+    listenActiveBookings();
+    listenCompletedBookings();
+  }
+
   void resetForm() {
     _selectedDate = DateTime.now();
     _selectedTime = const TimeOfDay(hour: 9, minute: 0);
@@ -102,7 +136,6 @@ class BookingViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ── Tab index for MyBookingsView ───────────────────────────
   int _selectedTab = 0;
   int get selectedTab => _selectedTab;
 
@@ -111,6 +144,6 @@ class BookingViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  List<Map<String, String>> get currentList =>
+  List<Booking> get currentList =>
       _selectedTab == 0 ? _activeBookings : _completedBookings;
 }

@@ -1,15 +1,26 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
+  // Brand colors (Driver + Manager same)
+  static const Color primary = Color(0xFF00796B);
+  static const Color primaryDark = Color(0xFF004D40);
+  static const Color accent = Color(0xFF00BFA5);
+  static const Color navy = Color(0xFF0A2540);
+
   static final ThemeData darkTheme = ThemeData(
     useMaterial3: true,
     colorScheme: ColorScheme.fromSeed(
-      seedColor: const Color(0xFF0A2540),
-      primary: const Color(0xFF0A2540),
-      secondary: const Color(0xFF00D4B4),
+      seedColor: primary,
+      primary: primary,
+      secondary: accent,
       brightness: Brightness.dark,
     ),
     scaffoldBackgroundColor: Colors.transparent,
+    appBarTheme: const AppBarTheme(
+      backgroundColor: primary,
+      foregroundColor: Colors.white,
+      elevation: 0,
+    ),
     cardTheme: CardThemeData(
       color: Colors.white.withValues(alpha: 0.08),
       elevation: 12,
@@ -44,10 +55,14 @@ class AppTheme {
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 18),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        backgroundColor: Colors.transparent,
-        shadowColor: Colors.transparent,
+        backgroundColor: primary,
+        foregroundColor: Colors.white,
         elevation: 0,
       ),
+    ),
+    floatingActionButtonTheme: const FloatingActionButtonThemeData(
+      backgroundColor: accent,
+      foregroundColor: Colors.white,
     ),
   );
 }

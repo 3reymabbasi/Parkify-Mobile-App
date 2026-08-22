@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/booking_service.dart';
 
 class ManagerParkingViewModel extends ChangeNotifier {
   final List<Map<String, dynamic>> _parkingLots = [
@@ -85,49 +86,25 @@ class ManagerParkingViewModel extends ChangeNotifier {
 }
 
 class ManagerBookingsViewModel extends ChangeNotifier {
+  final BookingService _bookingService = BookingService();
+  List<Map<String, dynamic>> get allBookings => List.unmodifiable(_allBookings);
+
   String _selectedTab = "All";
   String get selectedTab => _selectedTab;
 
-  final List<Map<String, dynamic>> _allBookings = [
-    {
-      "id": "BK-2026-001234",
-      "driver": "Ahmed Khan",
-      "parking": "Central Mall Parking - Slot A-12",
-      "date": "May 3, 2026",
-      "time": "09:00 AM - 12:00 PM",
-      "duration": "3 hours",
-      "amount": "240",
-      "status": "active",
-      "payment": "paid",
-    },
-    {
-      "id": "BK-2026-001235",
-      "driver": "Sarah Ali",
-      "parking": "City Plaza Parking - Slot B-25",
-      "date": "May 3, 2026",
-      "time": "10:00 AM - 02:00 PM",
-      "duration": "4 hours",
-      "amount": "400",
-      "status": "completed",
-      "payment": "paid",
-    },
-    {
-      "id": "BK-2026-001236",
-      "driver": "Bilal Ahmed",
-      "parking": "Metro Station Parking - Slot C-08",
-      "date": "May 3, 2026",
-      "time": "03:00 PM - 06:00 PM",
-      "duration": "3 hours",
-      "amount": "180",
-      "status": "upcoming",
-      "payment": "paid",
-    },
-  ];
+  List<Map<String, dynamic>> _allBookings = [];
+  bool _loading = false;
+
+  bool get loading => _loading;
 
   List<Map<String, dynamic>> get filteredBookings {
     if (_selectedTab == "All") return _allBookings;
     return _allBookings
-        .where((b) => b['status'] == _selectedTab.toLowerCase())
+        .where(
+          (b) =>
+              (b['status']?.toString().toLowerCase() ?? '') ==
+              _selectedTab.toLowerCase(),
+        )
         .toList();
   }
 
@@ -136,8 +113,30 @@ class ManagerBookingsViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void loadBookings() {
+    _loading = true;
+    notifyListeners();
+
+    _bookingService.getAllBookingsForManager().listen(
+      (list) {
+        _allBookings = list;
+        _loading = false;
+        notifyListeners();
+      },
+      onError: (e) {
+        _loading = false;
+        notifyListeners();
+      },
+    );
+  }
+
+  Future<bool> completeBooking(String bookingId) async {
+    final success = await _bookingService.completeBooking(bookingId);
+    return success;
+  }
+
   Color getStatusColor(String status) {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case "active":
         return Colors.green;
       case "completed":
@@ -151,6 +150,8 @@ class ManagerBookingsViewModel extends ChangeNotifier {
     }
   }
 
-  String getStatusText(String status) =>
-      status[0].toUpperCase() + status.substring(1);
+  String getStatusText(String status) {
+    if (status.isEmpty) return 'Unknown';
+    return status[0].toUpperCase() + status.substring(1).toLowerCase();
+  }
 }

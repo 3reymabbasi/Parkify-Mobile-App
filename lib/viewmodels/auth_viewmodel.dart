@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import '../services/auth_service.dart';
 
 class AuthViewModel extends ChangeNotifier {
+  final AuthService _authService = AuthService();
+
   // ── State ─────────────────────────────────────────────────
   bool _isPasswordVisible = false;
   bool _loading = false;
   String? _emailError;
   String? _passwordError;
   bool _isManagerMode = false;
+  String? _errorMessage;
 
   // Register state
   String? _nameError;
@@ -21,6 +25,7 @@ class AuthViewModel extends ChangeNotifier {
   String? get emailError => _emailError;
   String? get passwordError => _passwordError;
   bool get isManagerMode => _isManagerMode;
+  String? get errorMessage => _errorMessage;
 
   String? get nameError => _nameError;
   String? get phoneError => _phoneError;
@@ -42,13 +47,14 @@ class AuthViewModel extends ChangeNotifier {
   void clearLoginErrors() {
     _emailError = null;
     _passwordError = null;
+    _errorMessage = null;
     notifyListeners();
   }
 
-  /// Returns true if validation passes
   bool validateLogin(String email, String password) {
     _emailError = null;
     _passwordError = null;
+    _errorMessage = null;
     bool valid = true;
 
     if (email.isEmpty ||
@@ -64,25 +70,48 @@ class AuthViewModel extends ChangeNotifier {
     return valid;
   }
 
-  /// Returns 'manager' | 'driver' | null (null = invalid)
+  /// Returns 'manager' | 'driver' | null
   Future<String?> login(String email, String password) async {
     if (!validateLogin(email, password)) return null;
 
     _loading = true;
+    _errorMessage = null;
     notifyListeners();
 
-    await Future.delayed(const Duration(seconds: 1));
+    try {
+      final result = await _authService.login(
+        email: email.trim(),
+        password: password,
+      );
 
-    _loading = false;
-    notifyListeners();
+      _loading = false;
+      notifyListeners();
 
-    if (_isManagerMode) {
-      if (email == 'manager@smartparkify.com' && password == 'manager123') {
-        return 'manager';
+      // Success case
+      if (result == 'manager' || result == 'driver') {
+        if (_isManagerMode) {
+          if (result == 'manager') {
+            return 'manager';
+          } else {
+            _errorMessage = 'Invalid Manager Credentials';
+            notifyListeners();
+            return null;
+          }
+        }
+        // Driver mode
+        return 'driver';
       }
-      return null; // invalid manager credentials
+
+      // Error case (AuthService ne error message return kiya)
+      _errorMessage = result ?? 'Login failed';
+      notifyListeners();
+      return null;
+    } catch (e) {
+      _loading = false;
+      _errorMessage = 'Login failed: $e';
+      notifyListeners();
+      return null;
     }
-    return 'driver';
   }
 
   // ── Register Methods ───────────────────────────────────────
@@ -107,6 +136,7 @@ class AuthViewModel extends ChangeNotifier {
     _phoneError = null;
     _genderError = null;
     _passwordError = null;
+    _errorMessage = null;
     bool valid = true;
 
     if (name.trim().isEmpty) {
@@ -118,8 +148,9 @@ class AuthViewModel extends ChangeNotifier {
       _emailError = 'Valid email please';
       valid = false;
     }
-    if (phone.trim().isEmpty || phone.trim().length != 11) {
-      _phoneError = 'Valid phone number';
+    if (phone.trim().isEmpty ||
+        phone.trim().replaceAll(RegExp(r'\D'), '').length < 10) {
+      _phoneError = 'Valid phone number (11 digits)';
       valid = false;
     }
     if (_gender == null) {
@@ -151,13 +182,31 @@ class AuthViewModel extends ChangeNotifier {
     }
 
     _loading = true;
+    _errorMessage = null;
     notifyListeners();
 
-    await Future.delayed(const Duration(seconds: 1));
+    final error = await _authService.register(
+      name: name.trim(),
+      email: email.trim(),
+      phone: phone.trim(),
+      password: password,
+      gender: _gender ?? 'Other',
+    );
 
     _loading = false;
+
+    if (error != null) {
+      _errorMessage = error;
+      notifyListeners();
+      return false;
+    }
+
     notifyListeners();
     return true;
+  }
+
+  Future<void> logout() async {
+    await _authService.logout();
   }
 
   void resetState() {
@@ -170,6 +219,7 @@ class AuthViewModel extends ChangeNotifier {
     _genderError = null;
     _gender = null;
     _isRegPasswordVisible = false;
+    _errorMessage = null;
     notifyListeners();
   }
 }

@@ -1,20 +1,15 @@
-// ============================================================
-//  SmartParkify — BookingService
-//  Firebase Firestore ke sath booking CRUD operations
-//  Add, Get, Cancel, Update booking
-// ============================================================
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/booking_model.dart';
+import 'parking_service.dart';
 
 class BookingService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final ParkingService _parkingService = ParkingService();
 
   String get _uid => _auth.currentUser!.uid;
 
-  // ── ADD NEW BOOKING ────────────────────────────────────────
   Future<String?> addBooking({
     required String parkingName,
     required String address,
@@ -38,19 +33,20 @@ class BookingService {
         'createdAt': FieldValue.serverTimestamp(),
       });
 
-      // Driver ka booking count update karo
       await _db.collection('drivers').doc(_uid).update({
         'bookings': FieldValue.increment(1),
         'lastBooking': date,
       });
 
-      return docRef.id; // booking ID return karo
+      // Slot count kam karo
+      await _parkingService.decrementByName(parkingName);
+
+      return docRef.id;
     } catch (e) {
       return null;
     }
   }
 
-  // ── GET DRIVER KI ACTIVE BOOKINGS ─────────────────────────────
   Stream<List<Booking>> getActiveBookings() {
     return _db
         .collection('bookings')
@@ -69,13 +65,15 @@ class BookingService {
               time: data['time'] ?? '',
               slot: data['slot'] ?? '',
               amount: data['amount'] ?? '',
+              paymentMethod: data['paymentMethod'] ?? 'Cash on Arrival',
               status: data['status'] ?? 'Active',
+              lat: data['lat']?.toString(),
+              lng: data['lng']?.toString(),
             );
           }).toList(),
         );
   }
 
-  // ── GET DRIVER KI COMPLETED BOOKINGS ─────────────────────────
   Stream<List<Booking>> getCompletedBookings() {
     return _db
         .collection('bookings')
@@ -94,25 +92,33 @@ class BookingService {
               time: data['time'] ?? '',
               slot: data['slot'] ?? '',
               amount: data['amount'] ?? '',
+              paymentMethod: data['paymentMethod'] ?? 'Cash on Arrival',
               status: data['status'] ?? 'Completed',
+              lat: data['lat']?.toString(),
+              lng: data['lng']?.toString(),
             );
           }).toList(),
         );
   }
 
-  // ── CANCEL BOOKING ─────────────────────────────────────────
   Future<bool> cancelBooking(String bookingId) async {
     try {
+      final doc = await _db.collection('bookings').doc(bookingId).get();
+      final parkingName = doc.data()?['parkingName']?.toString() ?? '';
+
       await _db.collection('bookings').doc(bookingId).update({
         'status': 'Cancelled',
       });
+
+      if (parkingName.isNotEmpty) {
+        await _parkingService.incrementByName(parkingName);
+      }
       return true;
     } catch (e) {
       return false;
     }
   }
 
-  // ── COMPLETE BOOKING (Manager use karta hai) ─────────────────
   Future<bool> completeBooking(String bookingId) async {
     try {
       await _db.collection('bookings').doc(bookingId).update({
@@ -124,7 +130,6 @@ class BookingService {
     }
   }
 
-  // ── MANAGER: SAARI BOOKINGS GET KARO ─────────────────────────
   Stream<List<Map<String, dynamic>>> getAllBookingsForManager() {
     return _db
         .collection('bookings')

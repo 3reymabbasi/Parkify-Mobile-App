@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/report_viewmodel.dart';
+import 'my_reports_view.dart';
 import '../home/home_view.dart';
 
 class ReportView extends StatefulWidget {
@@ -59,21 +60,34 @@ class _ReportViewState extends State<ReportView> {
     );
   }
 
-  void _submitReport(BuildContext context, ReportViewModel vm) {
-    // Text fields (title, description) validate karo
+  void _submitReport(BuildContext context, ReportViewModel vm) async {
     if (!_formKey.currentState!.validate()) return;
+    if (!vm.canSubmit) return;
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const ReportConfirmationView()),
+    final success = await vm.submitReportToFirebase(
+      title: _titleController.text.trim(),
+      description: _detailedDescriptionController.text.trim(),
+      location: _locationController.text.trim(),
     );
 
-    // Saara form state saaf karo taake dobara screen kholne pe
-    // purani photo/text na dikhe
-    vm.reset();
-    _titleController.clear();
-    _detailedDescriptionController.clear();
-    _locationController.clear();
+    if (!context.mounted) return;
+
+    if (success) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const ReportConfirmationView()),
+      );
+      _titleController.clear();
+      _detailedDescriptionController.clear();
+      _locationController.clear();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to submit report'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
@@ -102,6 +116,18 @@ class _ReportViewState extends State<ReportView> {
                 color: Colors.white,
               ),
             ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.list_alt_rounded),
+                tooltip: 'My Reports',
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const MyReportsView()),
+                  );
+                },
+              ),
+            ],
           ),
           body: Form(
             key: _formKey,

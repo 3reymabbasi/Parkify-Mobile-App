@@ -6,10 +6,11 @@ class Booking {
   final String time;
   final String slot;
   final String amount;
-  final String
-  paymentMethod; // Cash on Arrival, Bank Transfer, EasyPaisa / JazzCash
-  final String status; // Active, Upcoming, Completed, Cancelled
-
+  final String paymentMethod;
+  final String status;
+  final String? lat;
+  final String? lng;
+  // Constructor
   Booking({
     required this.id,
     required this.parkingName,
@@ -20,26 +21,35 @@ class Booking {
     required this.amount,
     this.paymentMethod = 'Cash on Arrival',
     this.status = 'Active',
+    this.lat,
+    this.lng,
   });
 
-  factory Booking.fromMap(Map<String, String> map) {
+  // Convenience getter
+  String get location => parkingName;
+
+  // Factory Constructor
+  factory Booking.fromMap(Map<String, dynamic> map, {String? docId}) {
     return Booking(
-      id: map['id'] ?? '',
-      parkingName: map['location'] ?? '',
-      address: map['address'] ?? '',
-      date: map['date'] ?? '',
-      time: map['time'] ?? '',
-      slot: map['slot'] ?? '',
-      amount: map['amount'] ?? '',
-      paymentMethod: map['paymentMethod'] ?? 'Cash on Arrival',
-      status: map['status'] ?? 'Active',
+      id: docId ?? map['id']?.toString() ?? '',
+      parkingName:
+          map['parkingName']?.toString() ?? map['location']?.toString() ?? '',
+      address: map['address']?.toString() ?? '',
+      date: map['date']?.toString() ?? '',
+      time: map['time']?.toString() ?? '',
+      slot: map['slot']?.toString() ?? '',
+      amount: map['amount']?.toString() ?? '',
+      paymentMethod: map['paymentMethod']?.toString() ?? 'Cash on Arrival',
+      status: map['status']?.toString() ?? 'Active',
+      lat: map['lat']?.toString(),
+      lng: map['lng']?.toString(),
     );
   }
 
-  Map<String, String> toMap() {
+  Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'location': parkingName,
+      'parkingName': parkingName,
       'address': address,
       'date': date,
       'time': time,
@@ -47,6 +57,8 @@ class Booking {
       'amount': amount,
       'paymentMethod': paymentMethod,
       'status': status,
+      if (lat != null) 'lat': lat,
+      if (lng != null) 'lng': lng,
     };
   }
 }

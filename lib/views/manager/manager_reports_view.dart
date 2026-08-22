@@ -1,22 +1,22 @@
-// lib/views/manager/manager_reports_view.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/manager_reports_viewmodel.dart';
 
-class ManagerReportsView extends StatelessWidget {
+class ManagerReportsView extends StatefulWidget {
   const ManagerReportsView({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => ManagerReportsViewModel(),
-      child: const _ManagerReportsBody(),
-    );
-  }
+  State<ManagerReportsView> createState() => _ManagerReportsViewState();
 }
 
-class _ManagerReportsBody extends StatelessWidget {
-  const _ManagerReportsBody();
+class _ManagerReportsViewState extends State<ManagerReportsView> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ManagerReportsViewModel>().loadReports();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -126,7 +126,13 @@ class _ManagerReportsBody extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Expanded(
-                    child: reports.isEmpty
+                    child: vm.loading
+                        ? const Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                            ),
+                          )
+                        : reports.isEmpty
                         ? const Center(
                             child: Text(
                               'No reports found',
@@ -158,9 +164,15 @@ class _ReportCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color statusColor = vm.getStatusColor(report["status"]);
-    final Color typeColor = vm.getTypeColor(report["type"]);
-    final bool isPending = report["status"] == "pending";
+    final status = report['status']?.toString() ?? 'pending';
+    final type = report['type']?.toString() ?? 'Other';
+    final title = report['title']?.toString() ?? '';
+    final description = report['description']?.toString() ?? '';
+    final location = report['location']?.toString() ?? '';
+    final driverId = report['driverId']?.toString() ?? '';
+    final Color statusColor = vm.getStatusColor(status);
+    final Color typeColor = vm.getTypeColor(type);
+    final bool isPending = status.toLowerCase() == 'pending';
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -184,7 +196,7 @@ class _ReportCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(30),
                   ),
                   child: Text(
-                    report["type"],
+                    type,
                     style: TextStyle(
                       color: typeColor,
                       fontWeight: FontWeight.bold,
@@ -203,7 +215,7 @@ class _ReportCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(30),
                   ),
                   child: Text(
-                    vm.getStatusText(report["status"]),
+                    vm.getStatusText(status),
                     style: TextStyle(
                       color: statusColor,
                       fontWeight: FontWeight.bold,
@@ -215,7 +227,7 @@ class _ReportCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              report["title"],
+              title,
               style: const TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.bold,
@@ -224,40 +236,22 @@ class _ReportCard extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              report["description"],
+              description,
               style: const TextStyle(fontSize: 14, color: Colors.black54),
             ),
             const Divider(height: 24),
-            Text(
-              "👤 ${report["driver"]}",
-              style: const TextStyle(fontSize: 15, color: Colors.black87),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              "📍 ${report["lot"]}",
-              style: const TextStyle(fontSize: 14, color: Colors.black87),
-            ),
-            const SizedBox(height: 6),
-            Row(
-              children: [
-                Text(
-                  "📅 ${report["date"]}",
-                  style: const TextStyle(color: Colors.black87),
-                ),
-                const SizedBox(width: 12),
-                if (report["hasEvidence"] == true)
-                  const Row(
-                    children: [
-                      Icon(Icons.image, size: 16, color: Colors.black54),
-                      SizedBox(width: 4),
-                      Text(
-                        "Photo attached",
-                        style: TextStyle(color: Colors.black54, fontSize: 13),
-                      ),
-                    ],
-                  ),
-              ],
-            ),
+            if (driverId.isNotEmpty)
+              Text(
+                '👤 Driver: ${driverId.length > 12 ? '${driverId.substring(0, 12)}...' : driverId}',
+                style: const TextStyle(fontSize: 14, color: Colors.black87),
+              ),
+            if (location.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Text(
+                '📍 $location',
+                style: const TextStyle(fontSize: 14, color: Colors.black87),
+              ),
+            ],
             if (isPending) ...[
               const SizedBox(height: 16),
               Row(
@@ -269,15 +263,18 @@ class _ReportCard extends StatelessWidget {
                         foregroundColor: Colors.red,
                         side: const BorderSide(color: Colors.red),
                       ),
-                      onPressed: () {
-                        vm.rejectReport(report);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Report rejected • Driver notified'),
-                          ),
-                        );
+                      onPressed: () async {
+                        await vm.rejectReport(report);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Report rejected'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
                       },
-                      label: const Text("Reject"),
+                      label: const Text('Reject'),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -288,15 +285,18 @@ class _ReportCard extends StatelessWidget {
                         backgroundColor: Colors.green,
                         foregroundColor: Colors.white,
                       ),
-                      onPressed: () {
-                        vm.approveReport(report);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Report approved • Driver notified'),
-                          ),
-                        );
+                      onPressed: () async {
+                        await vm.approveReport(report);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Report approved'),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        }
                       },
-                      label: const Text("Approve"),
+                      label: const Text('Approve'),
                     ),
                   ),
                 ],

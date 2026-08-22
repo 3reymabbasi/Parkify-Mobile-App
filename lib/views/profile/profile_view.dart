@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/routes.dart';
 import '../../viewmodels/profile_viewmodel.dart';
+import '../reports/my_reports_view.dart';
 import '../feedback/feedback_view.dart';
 
 class ProfileView extends StatefulWidget {
@@ -22,6 +23,16 @@ class _ProfileViewState extends State<ProfileView> {
     final vm = context.read<ProfileViewModel>();
     _nameController = TextEditingController(text: vm.driverName);
     _phoneController = TextEditingController(text: vm.driverPhone);
+
+    // Load real data
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      vm.loadProfile().then((_) {
+        if (mounted) {
+          _nameController.text = vm.driverName;
+          _phoneController.text = vm.driverPhone;
+        }
+      });
+    });
   }
 
   @override
@@ -88,6 +99,19 @@ class _ProfileViewState extends State<ProfileView> {
                           context,
                           MaterialPageRoute(
                             builder: (_) => const FeedbackView(),
+                          ),
+                        ),
+                      ),
+                      _buildDivider(vm),
+                      _buildOptionTile(
+                        vm,
+                        icon: Icons.assignment_outlined,
+                        title: 'My Reports',
+                        subtitle: 'Check approval status',
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const MyReportsView(),
                           ),
                         ),
                       ),

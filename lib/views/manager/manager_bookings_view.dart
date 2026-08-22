@@ -2,26 +2,38 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/manager_parking_viewmodel.dart';
 
-class ManagerBookingsView extends StatelessWidget {
+class ManagerBookingsView extends StatefulWidget {
   const ManagerBookingsView({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => ManagerBookingsViewModel(),
-      child: const _ManagerBookingsBody(),
-    );
-  }
+  State<ManagerBookingsView> createState() => _ManagerBookingsViewState();
 }
 
-class _ManagerBookingsBody extends StatelessWidget {
-  const _ManagerBookingsBody();
+class _ManagerBookingsViewState extends State<ManagerBookingsView> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ManagerBookingsViewModel>().loadBookings();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<ManagerBookingsViewModel>(
       builder: (context, vm, _) {
         final bookings = vm.filteredBookings;
+
+        final total = vm.allBookings.length;
+        final active = vm.allBookings
+            .where((b) => (b['status']?.toString().toLowerCase() ?? '') == 'active')
+            .length;
+        final completed = vm.allBookings
+            .where((b) => (b['status']?.toString().toLowerCase() ?? '') == 'completed')
+            .length;
+        final cancelled = vm.allBookings
+            .where((b) => (b['status']?.toString().toLowerCase() ?? '') == 'cancelled')
+            .length;
 
         return Scaffold(
           body: Container(
@@ -35,16 +47,12 @@ class _ManagerBookingsBody extends StatelessWidget {
             child: SafeArea(
               child: Column(
                 children: [
-                  // Header
                   Padding(
                     padding: const EdgeInsets.all(16),
                     child: Row(
                       children: [
                         IconButton(
-                          icon: const Icon(
-                            Icons.arrow_back_ios,
-                            color: Colors.white,
-                          ),
+                          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
                           onPressed: () => Navigator.pop(context),
                         ),
                         const Text(
@@ -59,7 +67,7 @@ class _ManagerBookingsBody extends StatelessWidget {
                     ),
                   ),
 
-                  // Stats Grid
+                  // Stats
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: GridView.count(
@@ -69,27 +77,27 @@ class _ManagerBookingsBody extends StatelessWidget {
                       mainAxisSpacing: 12,
                       crossAxisSpacing: 12,
                       childAspectRatio: 1.75,
-                      children: const [
+                      children: [
                         _StatCard(
-                          title: "1,234",
+                          title: "$total",
                           subtitle: "Total Bookings",
                           icon: Icons.calendar_today,
                           color: Colors.blue,
                         ),
                         _StatCard(
-                          title: "89",
+                          title: "$active",
                           subtitle: "Active Now",
                           icon: Icons.timer,
                           color: Colors.green,
                         ),
                         _StatCard(
-                          title: "1,098",
+                          title: "$completed",
                           subtitle: "Completed",
                           icon: Icons.check_circle,
                           color: Colors.purple,
                         ),
                         _StatCard(
-                          title: "47",
+                          title: "$cancelled",
                           subtitle: "Cancelled",
                           icon: Icons.cancel,
                           color: Colors.red,
@@ -106,59 +114,60 @@ class _ManagerBookingsBody extends StatelessWidget {
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
-                        children: ["All", "Active", "Upcoming", "Completed"]
+                        children: ["All", "Active", "Completed", "Cancelled"]
                             .map((tab) {
-                              final bool selected = vm.selectedTab == tab;
-                              return GestureDetector(
-                                onTap: () => vm.setTab(tab),
-                                child: Container(
-                                  margin: const EdgeInsets.only(right: 8),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                    vertical: 10,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: selected
-                                        ? const Color(0xFF0A2540)
-                                        : Colors.white,
-                                    borderRadius: BorderRadius.circular(30),
-                                  ),
-                                  child: Text(
-                                    tab,
-                                    style: TextStyle(
-                                      color: selected
-                                          ? Colors.white
-                                          : Colors.black87,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
+                          final bool selected = vm.selectedTab == tab;
+                          return GestureDetector(
+                            onTap: () => vm.setTab(tab),
+                            child: Container(
+                              margin: const EdgeInsets.only(right: 8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 10,
+                              ),
+                              decoration: BoxDecoration(
+                                color: selected
+                                    ? const Color(0xFF0A2540)
+                                    : Colors.white,
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              child: Text(
+                                tab,
+                                style: TextStyle(
+                                  color: selected ? Colors.white : Colors.black87,
+                                  fontWeight: FontWeight.w600,
                                 ),
-                              );
-                            })
-                            .toList(),
+                              ),
+                            ),
+                          );
+                        }).toList(),
                       ),
                     ),
                   ),
 
                   const SizedBox(height: 16),
 
-                  // Bookings List
                   Expanded(
-                    child: bookings.isEmpty
+                    child: vm.loading
                         ? const Center(
-                            child: Text(
-                              'No bookings found',
-                              style: TextStyle(color: Colors.white70),
-                            ),
+                            child: CircularProgressIndicator(color: Colors.white),
                           )
-                        : ListView.builder(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            itemCount: bookings.length,
-                            itemBuilder: (context, index) {
-                              final booking = bookings[index];
-                              return _BookingCard(booking: booking, vm: vm);
-                            },
-                          ),
+                        : bookings.isEmpty
+                            ? const Center(
+                                child: Text(
+                                  'No bookings found',
+                                  style: TextStyle(color: Colors.white70),
+                                ),
+                              )
+                            : ListView.builder(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 16),
+                                itemCount: bookings.length,
+                                itemBuilder: (context, index) {
+                                  final booking = bookings[index];
+                                  return _BookingCard(booking: booking, vm: vm);
+                                },
+                              ),
                   ),
                 ],
               ),
@@ -170,7 +179,6 @@ class _ManagerBookingsBody extends StatelessWidget {
   }
 }
 
-// ── Booking Card ───────────────────────────────────────────
 class _BookingCard extends StatelessWidget {
   final Map<String, dynamic> booking;
   final ManagerBookingsViewModel vm;
@@ -179,7 +187,16 @@ class _BookingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color statusColor = vm.getStatusColor(booking["status"]);
+    final status = booking['status']?.toString() ?? 'Active';
+    final Color statusColor = vm.getStatusColor(status);
+    final id = booking['id']?.toString() ?? '';
+    final parking = booking['parkingName']?.toString() ?? 'Unknown';
+    final date = booking['date']?.toString() ?? '';
+    final time = booking['time']?.toString() ?? '';
+    final amount = booking['amount']?.toString() ?? '0';
+    final slot = booking['slot']?.toString() ?? '';
+    final payment = booking['paymentMethod']?.toString() ?? 'Cash on Arrival';
+    final driverId = booking['driverId']?.toString() ?? '';
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -196,27 +213,24 @@ class _BookingCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    booking["id"],
+                    id.length > 12 ? '${id.substring(0, 12)}...' : id,
                     style: const TextStyle(
-                      fontSize: 18,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 6,
-                  ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                   decoration: BoxDecoration(
                     color: statusColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(30),
                   ),
                   child: Text(
-                    vm.getStatusText(booking["status"]),
+                    vm.getStatusText(status),
                     style: TextStyle(
                       color: statusColor,
                       fontWeight: FontWeight.bold,
@@ -228,24 +242,28 @@ class _BookingCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              "👤 ${booking["driver"]}",
-              style: const TextStyle(fontSize: 16, color: Colors.black87),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              "📍 ${booking["parking"]}",
+              '📍 $parking',
               style: const TextStyle(fontSize: 15, color: Colors.black87),
             ),
+            if (slot.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Text(
+                '🅿️ Slot: $slot',
+                style: const TextStyle(fontSize: 14, color: Colors.black87),
+              ),
+            ],
             const SizedBox(height: 6),
             Text(
-              "📅 ${booking["date"]} • ${booking["time"]}",
+              '📅 $date • $time',
               style: const TextStyle(color: Colors.black87),
             ),
-            const SizedBox(height: 6),
-            Text(
-              "⏱ ${booking["duration"]}",
-              style: const TextStyle(color: Colors.black87),
-            ),
+            if (driverId.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Text(
+                '👤 Driver: ${driverId.length > 10 ? '${driverId.substring(0, 10)}...' : driverId}',
+                style: const TextStyle(fontSize: 13, color: Colors.black54),
+              ),
+            ],
             const Divider(height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -253,14 +271,12 @@ class _BookingCard extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      "Total Amount",
-                      style: TextStyle(color: Colors.black54),
-                    ),
+                    const Text('Total Amount',
+                        style: TextStyle(color: Colors.black54)),
                     Text(
-                      "Rs. ${booking["amount"]}",
+                      amount.contains('Rs') ? amount : 'Rs. $amount',
                       style: const TextStyle(
-                        fontSize: 24,
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF00796B),
                       ),
@@ -270,58 +286,50 @@ class _BookingCard extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    const Text(
-                      "Payment",
-                      style: TextStyle(color: Colors.black54),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.green.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Text(
-                        "PAID",
-                        style: TextStyle(
-                          color: Colors.green,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    const Text('Payment',
+                        style: TextStyle(color: Colors.black54)),
+                    Text(
+                      payment,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
                       ),
                     ),
                   ],
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () {},
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.black87,
-                    ),
-                    child: const Text("View Details"),
-                  ),
-                ),
-                if (booking["status"] == "active") ...[
-                  const SizedBox(width: 12),
+            if (status.toLowerCase() == 'active') ...[
+              const SizedBox(height: 16),
+              Row(
+                children: [
                   Expanded(
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
+                        backgroundColor: Colors.blue,
                         foregroundColor: Colors.white,
                       ),
-                      onPressed: () {},
-                      child: const Text("Cancel"),
+                      onPressed: () async {
+                        final ok = await vm.completeBooking(id);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(ok
+                                  ? 'Marked as Completed'
+                                  : 'Failed to update'),
+                              backgroundColor:
+                                  ok ? Colors.green : Colors.red,
+                            ),
+                          );
+                        }
+                      },
+                      child: const Text('Complete'),
                     ),
                   ),
                 ],
-              ],
-            ),
+              ),
+            ],
           ],
         ),
       ),
@@ -329,7 +337,6 @@ class _BookingCard extends StatelessWidget {
   }
 }
 
-// ── Stat Card ──────────────────────────────────────────────
 class _StatCard extends StatelessWidget {
   final String title;
   final String subtitle;

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/routes.dart';
 import '../../viewmodels/auth_viewmodel.dart';
 
 class RegisterView extends StatefulWidget {
@@ -31,12 +32,24 @@ class _RegisterViewState extends State<RegisterView> {
       phone: _phoneController.text.trim(),
       password: _passwordController.text,
     );
+
     if (!mounted) return;
+
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Account Created Successfully!')),
+        const SnackBar(
+          content: Text('Account created successfully! Please login.'),
+          backgroundColor: Color(0xFF00796B),
+        ),
       );
-      Navigator.pop(context);
+      Navigator.pushReplacementNamed(context, AppRoutes.login);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(vm.errorMessage ?? 'Registration failed'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
     }
   }
 
@@ -57,36 +70,39 @@ class _RegisterViewState extends State<RegisterView> {
               ),
               child: SafeArea(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 30,
+                  ),
                   child: Column(
                     children: [
                       const SizedBox(height: 20),
-                      Row(
-                        children: [
-                          IconButton(
-                            icon: const Icon(
-                              Icons.arrow_back,
-                              color: Colors.white,
-                              size: 28,
-                            ),
-                            onPressed: () => Navigator.pop(context),
-                          ),
-                        ],
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Icon(
+                          Icons.person_add_alt_1,
+                          size: 50,
+                          color: Colors.white,
+                        ),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 24),
                       const Text(
                         'Create Account',
                         style: TextStyle(
-                          fontSize: 36,
+                          fontSize: 32,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
                       ),
                       const Text(
-                        'Join SmartParkify today',
-                        style: TextStyle(fontSize: 18, color: Colors.white70),
+                        'Sign up to get started',
+                        style: TextStyle(fontSize: 16, color: Colors.white70),
                       ),
-                      const SizedBox(height: 40),
+                      const SizedBox(height: 30),
 
                       // White Card
                       Container(
@@ -98,163 +114,124 @@ class _RegisterViewState extends State<RegisterView> {
                             BoxShadow(
                               color: Colors.black.withValues(alpha: 0.15),
                               blurRadius: 30,
-                              offset: const Offset(0, 15),
                             ),
                           ],
                         ),
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             _buildTextField(
-                              'Full Name',
-                              Icons.person_outline,
-                              _nameController,
+                              label: 'Full Name',
+                              icon: Icons.person_outline,
+                              controller: _nameController,
                               error: vm.nameError,
                             ),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: 16),
                             _buildTextField(
-                              'Email',
-                              Icons.email_outlined,
-                              _emailController,
+                              label: 'Email',
+                              icon: Icons.email_outlined,
+                              controller: _emailController,
                               error: vm.emailError,
+                              keyboardType: TextInputType.emailAddress,
                             ),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: 16),
                             _buildTextField(
-                              'Phone Number',
-                              Icons.phone_outlined,
-                              _phoneController,
+                              label: 'Phone',
+                              icon: Icons.phone_outlined,
+                              controller: _phoneController,
                               error: vm.phoneError,
-                              keyboard: TextInputType.phone,
+                              keyboardType: TextInputType.phone,
                             ),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: 16),
 
-                            // Gender Dropdown
-                            const Text(
-                              'Gender',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black87,
+                            // Gender
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'Gender',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black87,
+                                  fontSize: 14,
+                                ),
                               ),
                             ),
                             const SizedBox(height: 8),
-                            DropdownButtonFormField<String>(
-                              initialValue: vm.gender,
-                              hint: const Text(
-                                'Select Gender',
-                                style: TextStyle(color: Colors.black54),
-                              ),
-                              items: ['Male', 'Female', 'Other'].map((value) {
-                                return DropdownMenuItem<String>(
-                                  value: value,
-                                  child: Text(
-                                    value,
-                                    style: const TextStyle(color: Colors.white),
-                                  ),
-                                );
-                              }).toList(),
-                              onChanged: vm.setGender,
-                              style: const TextStyle(color: Colors.black87),
-                              icon: const Icon(
-                                Icons.arrow_drop_down,
-                                color: Colors.black54,
-                              ),
-                              dropdownColor: const Color(0xFF1E1E1E),
-                              selectedItemBuilder: (BuildContext context) {
-                                return ['Male', 'Female', 'Other'].map((value) {
-                                  return Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      value,
-                                      style: const TextStyle(
-                                        color: Colors.black87,
-                                      ),
-                                    ),
-                                  );
-                                }).toList();
-                              },
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                  borderSide: BorderSide.none,
-                                ),
-                                filled: true,
-                                fillColor: const Color(0xFFF5F5F5),
-                                errorText: vm.genderError,
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                  borderSide: const BorderSide(
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFF00BFA5),
-                                    width: 2,
-                                  ),
-                                ),
-                              ),
+                            Row(
+                              children: [
+                                _genderChip(vm, 'Male'),
+                                const SizedBox(width: 10),
+                                _genderChip(vm, 'Female'),
+                                const SizedBox(width: 10),
+                                _genderChip(vm, 'Other'),
+                              ],
                             ),
-                            const SizedBox(height: 20),
+                            if (vm.genderError != null)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 6),
+                                child: Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    vm.genderError!,
+                                    style: const TextStyle(
+                                      color: Colors.red,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            const SizedBox(height: 16),
 
                             _buildPasswordField(vm),
-                            const SizedBox(height: 32),
+                            const SizedBox(height: 24),
 
-                            // Create Account Button
                             SizedBox(
                               width: double.infinity,
                               height: 56,
-                              child: DecoratedBox(
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [
-                                      Color(0xFF0A2540),
-                                      Color(0xFF00BFA5),
-                                    ],
+                              child: ElevatedButton(
+                                onPressed: vm.loading
+                                    ? null
+                                    : () => _onRegister(vm),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF00796B),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
                                   ),
-                                  borderRadius: BorderRadius.circular(16),
                                 ),
-                                child: ElevatedButton(
-                                  onPressed: vm.loading
-                                      ? null
-                                      : () => _onRegister(vm),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.transparent,
-                                    shadowColor: Colors.transparent,
-                                  ),
-                                  child: vm.loading
-                                      ? const CircularProgressIndicator(
+                                child: vm.loading
+                                    ? const CircularProgressIndicator(
+                                        color: Colors.white,
+                                      )
+                                    : const Text(
+                                        'Sign Up',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
                                           color: Colors.white,
-                                        )
-                                      : const Text(
-                                          'Create Account',
-                                          style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white,
-                                          ),
                                         ),
-                                ),
+                                      ),
                               ),
                             ),
                           ],
                         ),
                       ),
 
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 30),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           const Text(
-                            'Already have an account? ',
+                            "Already have an account? ",
                             style: TextStyle(color: Colors.white70),
                           ),
                           TextButton(
-                            onPressed: () => Navigator.pop(context),
+                            onPressed: () => Navigator.pushReplacementNamed(
+                              context,
+                              AppRoutes.login,
+                            ),
                             child: const Text(
                               'Sign In',
                               style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 16,
                                 color: Color(0xFF00D4B4),
                                 fontWeight: FontWeight.bold,
                               ),
@@ -273,12 +250,33 @@ class _RegisterViewState extends State<RegisterView> {
     );
   }
 
-  Widget _buildTextField(
-    String label,
-    IconData icon,
-    TextEditingController controller, {
+  Widget _genderChip(AuthViewModel vm, String value) {
+    final isSelected = vm.gender == value;
+    return GestureDetector(
+      onTap: () => vm.setGender(value),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF00796B) : Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          value,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.black87,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required String label,
+    required IconData icon,
+    required TextEditingController controller,
     String? error,
-    TextInputType? keyboard,
+    TextInputType keyboardType = TextInputType.text,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -293,10 +291,10 @@ class _RegisterViewState extends State<RegisterView> {
         const SizedBox(height: 8),
         TextField(
           controller: controller,
-          keyboardType: keyboard,
+          keyboardType: keyboardType,
           style: const TextStyle(color: Colors.black),
           decoration: InputDecoration(
-            hintText: 'Enter your ${label.toLowerCase()}',
+            hintText: 'Enter your $label',
             hintStyle: const TextStyle(color: Colors.black54),
             prefixIcon: Icon(icon, color: Colors.black54),
             errorText: error,
@@ -338,7 +336,7 @@ class _RegisterViewState extends State<RegisterView> {
           obscureText: !vm.isRegPasswordVisible,
           style: const TextStyle(color: Colors.black),
           decoration: InputDecoration(
-            hintText: 'Create a password',
+            hintText: 'Enter your password',
             hintStyle: const TextStyle(color: Colors.black54),
             prefixIcon: const Icon(Icons.lock_outline, color: Colors.black54),
             suffixIcon: IconButton(

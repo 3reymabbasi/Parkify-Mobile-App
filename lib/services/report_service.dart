@@ -1,13 +1,9 @@
-// ============================================================
-//  SmartParkify — ReportService
-//  Manager ke liye revenue aur booking reports
-//  Firestore se aggregate data nikalna
-// ============================================================
-
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ReportService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   // ── TOTAL REVENUE ──────────────────────────────────────────
   Future<double> getTotalRevenue() async {
@@ -56,7 +52,7 @@ class ReportService {
     }
   }
 
-  // ── MONTHLY REVENUE STREAM (Real-time) ────────────────────
+  // ── MONTHLY REVENUE STREAM ────────────────────────────────
   Stream<Map<String, double>> getMonthlyRevenueStream() {
     return _db
         .collection('bookings')
@@ -73,7 +69,6 @@ class ReportService {
                 '0';
             final amount = double.tryParse(amountStr) ?? 0;
 
-            // Simple month key: "May 2026" format
             final parts = dateStr.split('/');
             if (parts.length >= 2) {
               final months = [
@@ -117,7 +112,7 @@ class ReportService {
     }
   }
 
-  // ── DASHBOARD STATS (saab ek saath) ───────────────────────
+  // ── DASHBOARD STATS ───────────────────────────────────────
   Future<Map<String, dynamic>> getDashboardStats() async {
     try {
       final results = await Future.wait([
@@ -134,5 +129,86 @@ class ReportService {
     } catch (e) {
       return {'totalRevenue': 0.0, 'totalBookings': 0, 'activeDrivers': 0};
     }
+  }
+
+  // ── DRIVER: SUBMIT ISSUE REPORT ─────────────────────────────
+  Future<String?> submitReport({
+    required String type,
+    required String title,
+    required String description,
+    required String location,
+  }) async {
+    try {
+      final uid = _auth.currentUser?.uid ?? '';
+      final docRef = await _db.collection('reports').add({
+        'driverId': uid,
+        'type': type,
+        'title': title,
+        'description': description,
+        'location': location,
+        'status': 'pending',
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      return docRef.id;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // ── MANAGER: GET ALL REPORTS ────────────────────────────────
+  Stream<List<Map<String, dynamic>>> getAllReports() {
+    return _db
+        .collection('reports')
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs.map((doc) {
+            return {'id': doc.id, ...doc.data()};
+          }).toList(),
+        );
+  }
+
+  // ── MANAGER: UPDATE REPORT STATUS ───────────────────────────
+  Future<bool> updateReportStatus(String reportId, String status) async {
+    try {
+      await _db.collection('reports').doc(reportId).update({'status': status});
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // ── DRIVER: GET MY REPORTS ──────────────────────────────────
+  Stream<List<Map<String, dynamic>>> getMyReports() {
+    final uid = _auth.currentUser?.uid ?? '';
+    if (uid.isEmpty) {
+      return Stream.value([]);
+    }
+
+    return _db
+        .collection('reports')
+        .where('driverId', isEqualTo: uid)
+        .snapshots()
+        .map((snapshot) {
+          final list = snapshot.docs.map((doc) {
+            return {'id': doc.id, ...doc.data()};
+          }).toList();
+
+          // Client side sort (newest first)
+          list.sort((a, b) {
+            final aTime = a['createdAt'];
+            final bTime = b['createdAt'];
+            if (aTime == null && bTime == null) return 0;
+            if (aTime == null) return 1;
+            if (bTime == null) return -1;
+            try {
+              return (bTime as dynamic).compareTo(aTime as dynamic);
+            } catch (_) {
+              return 0;
+            }
+          });
+
+          return list;
+        });
   }
 }

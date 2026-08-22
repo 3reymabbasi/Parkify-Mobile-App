@@ -20,6 +20,7 @@ class _FindParkingViewState extends State<FindParkingView> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final vm = context.read<FindParkingViewModel>();
+      vm.loadParkingSpots();
       vm.getDriverLocation(context).then((_) {
         if (vm.driverLocation != null && mounted) {
           Future.delayed(const Duration(milliseconds: 300), () {

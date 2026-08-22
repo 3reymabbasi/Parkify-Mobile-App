@@ -1,4 +1,5 @@
 class DriverModel {
+  final String id;
   final String initials;
   final String name;
   final String email;
@@ -10,6 +11,7 @@ class DriverModel {
   String status; // active | suspended
 
   DriverModel({
+    required this.id,
     required this.initials,
     required this.name,
     required this.email,
@@ -23,15 +25,18 @@ class DriverModel {
 
   factory DriverModel.fromMap(Map<String, dynamic> map) {
     return DriverModel(
-      initials: map['initials'] ?? '',
-      name: map['name'] ?? '',
-      email: map['email'] ?? '',
-      phone: map['phone'] ?? '',
-      joined: map['joined'] ?? '',
-      bookings: map['bookings'] ?? 0,
-      spent: map['spent'] ?? '0',
-      lastBooking: map['lastBooking'] ?? '',
-      status: map['status'] ?? 'active',
+      id: map['uid']?.toString() ?? map['id']?.toString() ?? '',
+      initials: map['initials']?.toString() ?? '',
+      name: map['name']?.toString() ?? '',
+      email: map['email']?.toString() ?? '',
+      phone: map['phone']?.toString() ?? '',
+      joined: map['joined']?.toString() ?? '',
+      bookings: map['bookings'] is int
+          ? map['bookings']
+          : int.tryParse(map['bookings']?.toString() ?? '0') ?? 0,
+      spent: map['spent']?.toString() ?? '0',
+      lastBooking: map['lastBooking']?.toString() ?? '',
+      status: map['status']?.toString() ?? 'active',
     );
   }
 }

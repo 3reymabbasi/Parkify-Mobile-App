@@ -39,9 +39,10 @@ class _LoginViewState extends State<LoginView> {
         context,
       ).showSnackBar(const SnackBar(content: Text('Login Successful')));
       Navigator.pushReplacementNamed(context, AppRoutes.home);
-    } else if (vm.isManagerMode) {
+    } else {
+      final msg = vm.errorMessage ?? 'Invalid credentials';
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invalid Manager Credentials')),
+        SnackBar(content: Text(msg), backgroundColor: Colors.redAccent),
       );
     }
   }

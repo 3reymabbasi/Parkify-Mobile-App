@@ -1,87 +1,169 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../viewmodels/manager_parking_viewmodel.dart';
+import '../../viewmodels/manager_parking_lots_viewmodel.dart';
 
-class ManagerParkingLotsView extends StatelessWidget {
+class ManagerParkingLotsView extends StatefulWidget {
   const ManagerParkingLotsView({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => ManagerParkingViewModel(),
-      child: const _ManagerParkingLotsBody(),
-    );
-  }
+  State<ManagerParkingLotsView> createState() => _ManagerParkingLotsViewState();
 }
 
-class _ManagerParkingLotsBody extends StatelessWidget {
-  const _ManagerParkingLotsBody();
-
-  void _showAddEditDialog(
-    BuildContext context,
-    ManagerParkingViewModel vm, {
-    int? index,
-  }) {
-    final lot = index != null ? vm.parkingLots[index] : null;
-    showDialog(
-      context: context,
-      builder: (_) => _AddEditParkingLotDialog(
-        existingLot: lot,
-        onSave: (newLot) {
-          if (index != null) {
-            vm.updateLot(index, newLot);
-          } else {
-            vm.addLot(newLot);
-          }
-          Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                index != null
-                    ? "Parking Lot Updated Successfully"
-                    : "New Parking Lot Added",
-              ),
-              backgroundColor: const Color(0xFF00796B),
-            ),
-          );
-        },
-      ),
-    );
+class _ManagerParkingLotsViewState extends State<ManagerParkingLotsView> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ManagerParkingLotsViewModel>().loadLots();
+    });
   }
 
-  void _deleteLot(BuildContext context, ManagerParkingViewModel vm, int index) {
+  void _showAddLotDialog(BuildContext context) {
+    final nameCtrl = TextEditingController();
+    final addressCtrl = TextEditingController();
+    final priceCtrl = TextEditingController(text: 'Rs 50/hr');
+    final totalCtrl = TextEditingController(text: '40');
+    final latCtrl = TextEditingController(text: '33.6844');
+    final lngCtrl = TextEditingController(text: '73.0479');
+    final formKey = GlobalKey<FormState>();
+    bool saving = false;
+
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Delete Parking Lot?"),
-        content: Text(
-          "Are you sure you want to delete ${vm.parkingLots[index]['name']}?",
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
-          TextButton(
-            onPressed: () {
-              vm.deleteLot(index);
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Parking Lot Deleted")),
-              );
-            },
-            child: const Text("Delete", style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setDialogState) {
+            return AlertDialog(
+              title: const Text('Add Parking Lot'),
+              content: SingleChildScrollView(
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextFormField(
+                        controller: nameCtrl,
+                        decoration: const InputDecoration(labelText: 'Name'),
+                        validator: (v) =>
+                            v == null || v.trim().isEmpty ? 'Required' : null,
+                      ),
+                      TextFormField(
+                        controller: addressCtrl,
+                        decoration: const InputDecoration(labelText: 'Address'),
+                        validator: (v) =>
+                            v == null || v.trim().isEmpty ? 'Required' : null,
+                      ),
+                      TextFormField(
+                        controller: priceCtrl,
+                        decoration: const InputDecoration(
+                          labelText: 'Price (e.g. Rs 50/hr)',
+                        ),
+                      ),
+                      TextFormField(
+                        controller: totalCtrl,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: 'Total Spots',
+                        ),
+                        validator: (v) {
+                          if (v == null || int.tryParse(v) == null) {
+                            return 'Enter number';
+                          }
+                          return null;
+                        },
+                      ),
+                      TextFormField(
+                        controller: latCtrl,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: 'Latitude',
+                        ),
+                      ),
+                      TextFormField(
+                        controller: lngCtrl,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: 'Longitude',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF00796B),
+                  ),
+                  onPressed: saving
+                      ? null
+                      : () async {
+                          if (!formKey.currentState!.validate()) return;
+                          setDialogState(() => saving = true);
+
+                          final ok = await context
+                              .read<ManagerParkingLotsViewModel>()
+                              .addLot(
+                                name: nameCtrl.text.trim(),
+                                address: addressCtrl.text.trim(),
+                                price: priceCtrl.text.trim(),
+                                total: int.parse(totalCtrl.text.trim()),
+                                lat: double.tryParse(latCtrl.text) ?? 33.6844,
+                                lng: double.tryParse(lngCtrl.text) ?? 73.0479,
+                              );
+
+                          if (ctx.mounted) Navigator.pop(ctx);
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  ok ? 'Parking lot added' : 'Failed to add',
+                                ),
+                                backgroundColor: ok ? Colors.green : Colors.red,
+                              ),
+                            );
+                          }
+                        },
+                  child: saving
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text(
+                          'Save',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ManagerParkingViewModel>(
+    return Consumer<ManagerParkingLotsViewModel>(
       builder: (context, vm, _) {
+        final lots = vm.lots;
+
         return Scaffold(
+          floatingActionButton: FloatingActionButton.extended(
+            backgroundColor: const Color(0xFF00BFA5),
+            foregroundColor: Colors.white,
+            icon: const Icon(Icons.add),
+            label: const Text('Add Lot'),
+            onPressed: () => _showAddLotDialog(context),
+          ),
           body: Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -93,7 +175,6 @@ class _ManagerParkingLotsBody extends StatelessWidget {
             child: SafeArea(
               child: Column(
                 children: [
-                  // Header
                   Padding(
                     padding: const EdgeInsets.all(16),
                     child: Row(
@@ -108,57 +189,49 @@ class _ManagerParkingLotsBody extends StatelessWidget {
                         const Text(
                           'Parking Lots',
                           style: TextStyle(
-                            fontSize: 28,
+                            fontSize: 26,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
                         ),
-                        const Spacer(),
-                        IconButton(
-                          icon: const Icon(
-                            Icons.add,
-                            color: Colors.white,
-                            size: 32,
-                          ),
-                          onPressed: () => _showAddEditDialog(context, vm),
-                        ),
                       ],
                     ),
                   ),
-
-                  // Stats Row
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Row(
                       children: [
-                        _buildStatCard("5", "Total Lots"),
-                        const SizedBox(width: 12),
-                        _buildStatCard("497", "Occupied"),
-                        const SizedBox(width: 12),
-                        _buildStatCard("Rs. 104.5K", "Today"),
+                        _stat('${vm.totalLots}', 'Total', Colors.blue),
+                        const SizedBox(width: 10),
+                        _stat('${vm.openLots}', 'Open', Colors.green),
+                        const SizedBox(width: 10),
+                        _stat('${vm.fullLots}', 'Full', Colors.red),
                       ],
                     ),
                   ),
-
-                  const SizedBox(height: 20),
-
-                  // Lots List
+                  const SizedBox(height: 16),
                   Expanded(
-                    child: ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: vm.parkingLots.length,
-                      itemBuilder: (context, index) {
-                        final lot = vm.parkingLots[index];
-                        return _ParkingLotCard(
-                          lot: lot,
-                          vm: vm,
-                          index: index,
-                          onEdit: () =>
-                              _showAddEditDialog(context, vm, index: index),
-                          onDelete: () => _deleteLot(context, vm, index),
-                        );
-                      },
-                    ),
+                    child: vm.loading
+                        ? const Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                            ),
+                          )
+                        : lots.isEmpty
+                        ? const Center(
+                            child: Text(
+                              'No parking lots found',
+                              style: TextStyle(color: Colors.white70),
+                            ),
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.all(16),
+                            itemCount: lots.length,
+                            itemBuilder: (context, index) {
+                              final lot = lots[index];
+                              return _LotCard(lot: lot, vm: vm);
+                            },
+                          ),
                   ),
                 ],
               ),
@@ -169,28 +242,27 @@ class _ManagerParkingLotsBody extends StatelessWidget {
     );
   }
 
-  Widget _buildStatCard(String value, String label) {
+  Widget _stat(String value, String label, Color color) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.10),
+          color: Colors.white.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
           children: [
             Text(
               value,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: color,
               ),
             ),
             Text(
               label,
-              style: const TextStyle(color: Colors.white70, fontSize: 13),
-              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.white70, fontSize: 12),
             ),
           ],
         ),
@@ -199,443 +271,102 @@ class _ManagerParkingLotsBody extends StatelessWidget {
   }
 }
 
-// ── Parking Lot Card ───────────────────────────────────────
-class _ParkingLotCard extends StatelessWidget {
+class _LotCard extends StatelessWidget {
   final Map<String, dynamic> lot;
-  final ManagerParkingViewModel vm;
-  final int index;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
+  final ManagerParkingLotsViewModel vm;
 
-  const _ParkingLotCard({
-    required this.lot,
-    required this.vm,
-    required this.index,
-    required this.onEdit,
-    required this.onDelete,
-  });
+  const _LotCard({required this.lot, required this.vm});
 
   @override
   Widget build(BuildContext context) {
-    final Color statusColor = vm.getStatusColor(lot["status"]);
+    final name = lot['name']?.toString() ?? 'Unknown';
+    final address = lot['address']?.toString() ?? '';
+    final price = lot['price']?.toString() ?? '';
+    final available = lot['available'] ?? 0;
+    final total = lot['total'] ?? 0;
+    final isOpen = lot['isAvailable'] == true;
+    final status = lot['status']?.toString() ?? (isOpen ? 'Open' : 'Full');
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      color: Colors.white,
-      elevation: 6,
+      margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
                   child: Text(
-                    lot["name"],
+                    name,
                     style: const TextStyle(
-                      fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                      fontSize: 17,
                     ),
                   ),
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
+                    horizontal: 10,
+                    vertical: 5,
                   ),
                   decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha: 0.15),
+                    color: (isOpen ? Colors.green : Colors.red).withValues(
+                      alpha: 0.15,
+                    ),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    (lot["status"] as String).toUpperCase(),
+                    status,
                     style: TextStyle(
-                      color: statusColor,
+                      color: isOpen ? Colors.green : Colors.red,
                       fontWeight: FontWeight.bold,
-                      fontSize: 13,
+                      fontSize: 12,
                     ),
                   ),
                 ),
               ],
             ),
-            Text(
-              lot["address"],
-              style: const TextStyle(color: Colors.black87, fontSize: 15),
-            ),
-            const SizedBox(height: 12),
-
-            // Occupancy
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  "Occupancy",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black,
-                  ),
-                ),
-                Text(
-                  "${lot['occupancy']} (${lot['percentage']}%)",
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: LinearProgressIndicator(
-                value: (lot['percentage'] as int) / 100,
-                backgroundColor: Colors.grey.shade300,
-                color: (lot['percentage'] as int) > 90
-                    ? Colors.red
-                    : const Color(0xFF00796B),
-                minHeight: 8,
+            if (address.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Text(
+                address,
+                style: const TextStyle(fontSize: 13, color: Colors.black54),
               ),
-            ),
-            const SizedBox(height: 16),
-
-            // Price & Timing
-            Row(
-              children: [
-                Text(
-                  "Rs. ${lot['price']}/hour   ",
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.black,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const Icon(Icons.access_time, size: 20, color: Colors.black),
-                Text(
-                  " ${lot['timing']}",
-                  style: const TextStyle(color: Colors.black),
-                ),
-              ],
+            ],
+            const SizedBox(height: 8),
+            Text(
+              'Slots: $available / $total  •  $price',
+              style: const TextStyle(fontSize: 14, color: Colors.black87),
             ),
             const SizedBox(height: 12),
-
-            // Amenities
-            Wrap(
-              spacing: 8,
-              children: (lot['amenities'] as List<dynamic>)
-                  .map(
-                    (a) => Chip(
-                      label: Text(
-                        a.toString(),
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.black,
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isOpen ? Colors.orange : Colors.green,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: () async {
+                  final ok = await vm.toggleAvailability(lot);
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          ok
+                              ? (isOpen ? 'Marked as Full' : 'Marked as Open')
+                              : 'Update failed',
                         ),
+                        backgroundColor: ok ? Colors.teal : Colors.red,
                       ),
-                      backgroundColor: Colors.grey.shade100,
-                    ),
-                  )
-                  .toList(),
-            ),
-
-            const Divider(height: 24),
-
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    icon: const Icon(Icons.edit),
-                    label: const Text("Edit"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0A2540),
-                      foregroundColor: Colors.white,
-                    ),
-                    onPressed: onEdit,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: onDelete,
-                ),
-              ],
+                    );
+                  }
+                },
+                child: Text(isOpen ? 'Mark as Full' : 'Mark as Open'),
+              ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-// ── Add / Edit Dialog ──────────────────────────────────────
-class _AddEditParkingLotDialog extends StatefulWidget {
-  final Map<String, dynamic>? existingLot;
-  final Function(Map<String, dynamic>) onSave;
-
-  const _AddEditParkingLotDialog({this.existingLot, required this.onSave});
-
-  @override
-  State<_AddEditParkingLotDialog> createState() =>
-      _AddEditParkingLotDialogState();
-}
-
-class _AddEditParkingLotDialogState extends State<_AddEditParkingLotDialog> {
-  late TextEditingController nameController;
-  late TextEditingController addressController;
-  late TextEditingController slotsController;
-  late TextEditingController priceController;
-  late TextEditingController latController;
-  late TextEditingController longController;
-
-  TimeOfDay? openingTime;
-  TimeOfDay? closingTime;
-
-  final Map<String, bool> amenities = {
-    "CCTV": true,
-    "Security": true,
-    "Valet": false,
-    "EV Charging": false,
-    "Car Wash": false,
-    "Shuttle": false,
-  };
-
-  @override
-  void initState() {
-    super.initState();
-    final lot = widget.existingLot;
-    nameController = TextEditingController(text: lot?['name'] ?? '');
-    addressController = TextEditingController(text: lot?['address'] ?? '');
-    slotsController = TextEditingController(
-      text: lot?['totalSlots']?.toString() ?? '150',
-    );
-    priceController = TextEditingController(text: lot?['price'] ?? '80');
-    latController = TextEditingController(text: lot?['lat'] ?? '31.5204');
-    longController = TextEditingController(text: lot?['long'] ?? '74.3587');
-    openingTime = const TimeOfDay(hour: 8, minute: 0);
-    closingTime = const TimeOfDay(hour: 22, minute: 0);
-
-    // Pre-fill amenities if editing
-    if (lot != null) {
-      final existingAmenities = lot['amenities'] as List<dynamic>? ?? [];
-      for (final key in amenities.keys) {
-        amenities[key] = existingAmenities.contains(key);
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    nameController.dispose();
-    addressController.dispose();
-    slotsController.dispose();
-    priceController.dispose();
-    latController.dispose();
-    longController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _pickTime(bool isOpening) async {
-    final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: isOpening
-          ? (openingTime ?? const TimeOfDay(hour: 8, minute: 0))
-          : (closingTime ?? const TimeOfDay(hour: 22, minute: 0)),
-    );
-    if (picked != null) {
-      setState(() {
-        if (isOpening) {
-          openingTime = picked;
-        } else {
-          closingTime = picked;
-        }
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      backgroundColor: Colors.white,
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              widget.existingLot == null
-                  ? "Add New Parking Lot"
-                  : "Edit Parking Lot",
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF0A2540),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            _buildTextField("Parking Lot Name", nameController),
-            const SizedBox(height: 12),
-            _buildTextField("Full Address", addressController),
-            const SizedBox(height: 12),
-
-            Row(
-              children: [
-                Expanded(
-                  child: _buildTextField(
-                    "Total Slots",
-                    slotsController,
-                    isNumber: true,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildTextField(
-                    "Price/Hour (Rs.)",
-                    priceController,
-                    isNumber: true,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-
-            // Time pickers
-            Row(
-              children: [
-                Expanded(
-                  child: ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text(
-                      "Opening Time",
-                      style: TextStyle(color: Colors.black),
-                    ),
-                    subtitle: Text(
-                      openingTime?.format(context) ?? "--:--",
-                      style: const TextStyle(color: Colors.black87),
-                    ),
-                    onTap: () => _pickTime(true),
-                  ),
-                ),
-                Expanded(
-                  child: ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text(
-                      "Closing Time",
-                      style: TextStyle(color: Colors.black),
-                    ),
-                    subtitle: Text(
-                      closingTime?.format(context) ?? "--:--",
-                      style: const TextStyle(color: Colors.black87),
-                    ),
-                    onTap: () => _pickTime(false),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-
-            Row(
-              children: [
-                Expanded(child: _buildTextField("Latitude", latController)),
-                const SizedBox(width: 12),
-                Expanded(child: _buildTextField("Longitude", longController)),
-              ],
-            ),
-
-            const SizedBox(height: 16),
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "Amenities",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
-              ),
-            ),
-            ...amenities.keys.map(
-              (key) => SwitchListTile(
-                title: Text(key, style: const TextStyle(color: Colors.black)),
-                value: amenities[key]!,
-                onChanged: (val) => setState(() => amenities[key] = val),
-                dense: true,
-                contentPadding: EdgeInsets.zero,
-                activeTrackColor: const Color(0xFF00796B),
-              ),
-            ),
-
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                Expanded(
-                  child: TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text(
-                      "Cancel",
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF00796B),
-                      foregroundColor: Colors.white,
-                    ),
-                    onPressed: () {
-                      final newLot = {
-                        "name": nameController.text.isEmpty
-                            ? "New Parking Lot"
-                            : nameController.text,
-                        "address": addressController.text,
-                        "status": "active",
-                        "occupancy": "0/${slotsController.text}",
-                        "percentage": 0,
-                        "price": priceController.text,
-                        "timing":
-                            "${openingTime?.format(context) ?? '08:00'} - ${closingTime?.format(context) ?? '22:00'}",
-                        "revenue": "0",
-                        "totalSlots": int.tryParse(slotsController.text) ?? 150,
-                        "lat": latController.text,
-                        "long": longController.text,
-                        "amenities": amenities.entries
-                            .where((e) => e.value)
-                            .map((e) => e.key)
-                            .toList(),
-                      };
-                      widget.onSave(newLot);
-                    },
-                    child: const Text("Save"),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField(
-    String label,
-    TextEditingController controller, {
-    bool isNumber = false,
-  }) {
-    return TextField(
-      controller: controller,
-      keyboardType: isNumber ? TextInputType.number : TextInputType.text,
-      style: const TextStyle(color: Colors.black),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(color: Colors.black87),
-        border: const OutlineInputBorder(),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: 14,
         ),
       ),
     );

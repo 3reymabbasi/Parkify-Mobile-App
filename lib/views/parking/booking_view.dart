@@ -306,33 +306,49 @@ class BookingView extends StatelessWidget {
                   width: double.infinity,
                   height: 58,
                   child: ElevatedButton(
-                    onPressed: () {
-                      // Format changed to 'Rs. [amount]' for database/viewmodel state
-                      final String formattedAmount =
-                          'Rs. ${total.toStringAsFixed(0)}';
+                    onPressed: vm.loading
+                        ? null
+                        : () async {
+                            final String formattedAmount =
+                                'Rs. ${total.toStringAsFixed(0)}';
 
-                      vm.addActiveBooking(
-                        parkingName: parkingName,
-                        date: formattedDate,
-                        time: formattedTime,
-                        amount: formattedAmount,
-                        latitude: location.latitude,
-                        longitude: location.longitude,
-                      );
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => BookingConfirmationView(
-                            parkingName: parkingName,
-                            date: formattedDate,
-                            time: formattedTime,
-                            slot: 'A-12',
-                            amount: formattedAmount,
-                            location: location,
-                          ),
-                        ),
-                      );
-                    },
+                            final bookingId = await vm.addActiveBooking(
+                              parkingName: parkingName,
+                              address: parkingName, // required parameter
+                              date: formattedDate,
+                              time: formattedTime,
+                              amount: formattedAmount,
+                              latitude: location.latitude,
+                              longitude: location.longitude,
+                            );
+
+                            if (!context.mounted) return;
+
+                            if (bookingId != null) {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => BookingConfirmationView(
+                                    parkingName: parkingName,
+                                    date: formattedDate,
+                                    time: formattedTime,
+                                    slot: 'A-12',
+                                    amount: formattedAmount,
+                                    location: location,
+                                  ),
+                                ),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Booking failed. Please try again.',
+                                  ),
+                                  backgroundColor: Colors.redAccent,
+                                ),
+                              );
+                            }
+                          },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF00BFA5),
                       shape: RoundedRectangleBorder(

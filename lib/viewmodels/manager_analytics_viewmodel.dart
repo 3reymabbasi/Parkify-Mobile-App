@@ -1,76 +1,77 @@
-// lib/viewmodels/manager_analytics_viewmodel.dart
 import 'package:flutter/material.dart';
+import '../services/report_service.dart';
+import '../services/booking_service.dart';
 
 class ManagerAnalyticsViewModel extends ChangeNotifier {
-  String _selectedPeriod = "Monthly";
-  String get selectedPeriod => _selectedPeriod;
+  final ReportService _reportService = ReportService();
+  final BookingService _bookingService = BookingService();
 
-  final Map<String, List<Map<String, dynamic>>> _revenueByPeriod = {
-    "Weekly": [
-      {"label": "Mon", "value": 4200.0},
-      {"label": "Tue", "value": 5100.0},
-      {"label": "Wed", "value": 3800.0},
-      {"label": "Thu", "value": 6200.0},
-      {"label": "Fri", "value": 7400.0},
-      {"label": "Sat", "value": 8900.0},
-      {"label": "Sun", "value": 6600.0},
-    ],
-    "Monthly": [
-      {"label": "Jan", "value": 32000.0},
-      {"label": "Feb", "value": 28500.0},
-      {"label": "Mar", "value": 41200.0},
-      {"label": "Apr", "value": 38900.0},
-      {"label": "May", "value": 45200.0},
-      {"label": "Jun", "value": 49800.0},
-    ],
-    "Yearly": [
-      {"label": "2022", "value": 320000.0},
-      {"label": "2023", "value": 410000.0},
-      {"label": "2024", "value": 468000.0},
-      {"label": "2025", "value": 512000.0},
-      {"label": "2026", "value": 235500.0},
-    ],
-  };
+  bool _loading = true;
+  double _totalRevenue = 0;
+  int _totalBookings = 0;
+  int _activeBookings = 0;
+  int _completedBookings = 0;
+  int _cancelledBookings = 0;
+  Map<String, int> _byParking = {};
 
-  final List<Map<String, dynamic>> _lotRevenue = [
-    {"name": "City Plaza Parking", "revenue": 32400.0, "bookings": 210},
-    {"name": "Central Mall Parking", "revenue": 24500.0, "bookings": 168},
-    {"name": "Metro Station Parking", "revenue": 18900.0, "bookings": 143},
-    {"name": "Airport Parking", "revenue": 0.0, "bookings": 0},
-  ];
+  bool get loading => _loading;
+  double get totalRevenue => _totalRevenue;
+  int get totalBookings => _totalBookings;
+  int get activeBookings => _activeBookings;
+  int get completedBookings => _completedBookings;
+  int get cancelledBookings => _cancelledBookings;
+  Map<String, int> get byParking => _byParking;
 
-  List<Map<String, dynamic>> get chartData =>
-      _revenueByPeriod[_selectedPeriod]!;
-
-  List<Map<String, dynamic>> get lotRevenue {
-    final sorted = List<Map<String, dynamic>>.from(_lotRevenue);
-    sorted.sort(
-      (a, b) => (b["revenue"] as double).compareTo(a["revenue"] as double),
-    );
-    return sorted;
+  String get revenueFormatted {
+    if (_totalRevenue >= 1000) {
+      return 'Rs. ${(_totalRevenue / 1000).toStringAsFixed(1)}K';
+    }
+    return 'Rs. ${_totalRevenue.toStringAsFixed(0)}';
   }
 
-  double get totalRevenue =>
-      chartData.fold(0.0, (sum, item) => sum + (item["value"] as double));
-
-  double get maxValue => chartData
-      .map((e) => e["value"] as double)
-      .reduce((a, b) => a > b ? a : b);
-
-  int get totalBookings =>
-      _lotRevenue.fold(0, (sum, l) => sum + (l["bookings"] as int));
-
-  double get avgBookingValue =>
-      totalBookings == 0 ? 0 : totalRevenue / totalBookings;
-
-  void setPeriod(String period) {
-    _selectedPeriod = period;
+  Future<void> loadAnalytics() async {
+    _loading = true;
     notifyListeners();
-  }
 
-  double lotPercentage(Map<String, dynamic> lot) {
-    final top = lotRevenue.first["revenue"] as double;
-    if (top == 0) return 0;
-    return (lot["revenue"] as double) / top;
+    try {
+      final stats = await _reportService.getDashboardStats();
+      _totalRevenue = (stats['totalRevenue'] as num?)?.toDouble() ?? 0;
+      _totalBookings = (stats['totalBookings'] as int?) ?? 0;
+
+      // Booking counts by status
+      _bookingService.getAllBookingsForManager().listen((list) {
+        _activeBookings = list
+            .where(
+              (b) => (b['status']?.toString().toLowerCase() ?? '') == 'active',
+            )
+            .length;
+        _completedBookings = list
+            .where(
+              (b) =>
+                  (b['status']?.toString().toLowerCase() ?? '') == 'completed',
+            )
+            .length;
+        _cancelledBookings = list
+            .where(
+              (b) =>
+                  (b['status']?.toString().toLowerCase() ?? '') == 'cancelled',
+            )
+            .length;
+
+        // By parking lot
+        final map = <String, int>{};
+        for (final b in list) {
+          final name = b['parkingName']?.toString() ?? 'Unknown';
+          map[name] = (map[name] ?? 0) + 1;
+        }
+        _byParking = map;
+
+        _loading = false;
+        notifyListeners();
+      });
+    } catch (e) {
+      _loading = false;
+      notifyListeners();
+    }
   }
 }

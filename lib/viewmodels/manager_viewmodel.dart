@@ -7,6 +7,7 @@ class ManagerViewModel extends ChangeNotifier {
 
   final List<DriverModel> _drivers = [
     DriverModel(
+      id: 'mock1',
       initials: 'AK',
       name: 'Ahmed Khan',
       email: 'ahmed.khan@email.com',
@@ -18,6 +19,7 @@ class ManagerViewModel extends ChangeNotifier {
       status: 'active',
     ),
     DriverModel(
+      id: 'mock2',
       initials: 'SA',
       name: 'Sarah Ali',
       email: 'sarah.ali@email.com',
@@ -29,6 +31,7 @@ class ManagerViewModel extends ChangeNotifier {
       status: 'active',
     ),
     DriverModel(
+      id: 'mock3',
       initials: 'FN',
       name: 'Fatima Noor',
       email: 'fatima.noor@email.com',
@@ -40,6 +43,7 @@ class ManagerViewModel extends ChangeNotifier {
       status: 'active',
     ),
     DriverModel(
+      id: 'mock4',
       initials: 'IB',
       name: 'Imran Baig',
       email: 'imran.baig@email.com',
@@ -51,6 +55,7 @@ class ManagerViewModel extends ChangeNotifier {
       status: 'suspended',
     ),
     DriverModel(
+      id: 'mock5',
       initials: 'AN',
       name: 'Arsalan Naseer',
       email: 'arsalan.nas@email.com',
@@ -62,6 +67,7 @@ class ManagerViewModel extends ChangeNotifier {
       status: 'active',
     ),
     DriverModel(
+      id: 'mock6',
       initials: 'MF',
       name: 'Mahir Fareed',
       email: 'maahir@email.com',
@@ -76,7 +82,9 @@ class ManagerViewModel extends ChangeNotifier {
 
   List<DriverModel> get filteredDrivers {
     if (_selectedTab == 'All') return _drivers;
-    return _drivers.where((u) => u.status == _selectedTab.toLowerCase()).toList();
+    return _drivers
+        .where((u) => u.status == _selectedTab.toLowerCase())
+        .toList();
   }
 
   void setTab(String tab) {

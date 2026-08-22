@@ -1,4 +1,3 @@
-// lib/views/parking/parking_detail_view.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -44,7 +43,7 @@ class ParkingDetailView extends StatelessWidget {
             fontSize: 20,
           ),
         ),
-        backgroundColor: const Color(0xFF0A2540),
+        backgroundColor: const Color(0xFF00796B),
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -84,12 +83,14 @@ class ParkingDetailView extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        name,
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                      Expanded(
+                        child: Text(
+                          name,
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
                         ),
                       ),
                       Container(
@@ -130,10 +131,7 @@ class ParkingDetailView extends StatelessWidget {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 24),
-
-                  // Availability Card
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
@@ -165,7 +163,7 @@ class ParkingDetailView extends StatelessWidget {
                               style: const TextStyle(
                                 fontSize: 22,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF0A2540),
+                                color: Color(0xFF00796B),
                               ),
                             ),
                           ],
@@ -211,10 +209,7 @@ class ParkingDetailView extends StatelessWidget {
                       ],
                     ),
                   ),
-
                   const SizedBox(height: 28),
-
-                  // Description
                   const Text(
                     'About',
                     style: TextStyle(
@@ -246,10 +241,7 @@ class ParkingDetailView extends StatelessWidget {
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 28),
-
-                  // Operating Hours
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
@@ -279,9 +271,9 @@ class ParkingDetailView extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 16),
-                        Column(
+                        const Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
+                          children: [
                             Text(
                               'Operating Hours',
                               style: TextStyle(
@@ -304,12 +296,7 @@ class ParkingDetailView extends StatelessWidget {
                       ],
                     ),
                   ),
-
                   const SizedBox(height: 40),
-
-                  // Book Now Button (Get Directions yahan se hata diya —
-                  // booking confirm hone ke baad Booking Confirmation screen
-                  // par milega, kyunke tab tak koi slot reserve hi nahi hua)
                   SizedBox(
                     width: double.infinity,
                     height: 58,
@@ -330,7 +317,7 @@ class ParkingDetailView extends StatelessWidget {
                           : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: canBook
-                            ? const Color(0xFF00BFA5)
+                            ? const Color(0xFF00796B)
                             : Colors.red.shade600,
                         disabledBackgroundColor: Colors.red.shade600,
                         foregroundColor: Colors.white,
@@ -349,7 +336,6 @@ class ParkingDetailView extends StatelessWidget {
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 60),
                 ],
               ),
@@ -357,30 +343,6 @@ class ParkingDetailView extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildAmenity(IconData icon, String label) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: const Color(0xFF00BFA5).withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Icon(icon, color: const Color(0xFF00BFA5), size: 28),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
-          ),
-        ),
-      ],
     );
   }
 }

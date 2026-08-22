@@ -1,9 +1,3 @@
-// ============================================================
-//  SmartParkify — AuthService
-//  Firebase Authentication ke sare operations yahan hain
-//  Login, Register, Logout, Password Reset
-// ============================================================
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -11,11 +5,9 @@ class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  // ── Current logged-in driver ─────────────────────────────────
   User? get currentUser => _auth.currentUser;
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
-  // ── LOGIN ──────────────────────────────────────────────────
   Future<String?> login({
     required String email,
     required String password,
@@ -26,14 +18,18 @@ class AuthService {
         password: password,
       );
 
-      // Check karo yeh manager hai ya normal driver
-      final doc = await _db
-          .collection('drivers')
-          .doc(_auth.currentUser!.uid)
-          .get();
-      if (doc.exists) {
-        return doc.data()?['role'] ?? 'driver';
+      final uid = _auth.currentUser?.uid;
+      if (uid == null) {
+        return 'Something went wrong. Try again.';
       }
+
+      final doc = await _db.collection('drivers').doc(uid).get();
+
+      if (doc.exists) {
+        final role = doc.data()?['role']?.toString().trim() ?? 'driver';
+        return role;
+      }
+
       return 'driver';
     } on FirebaseAuthException catch (e) {
       return _handleAuthError(e.code);
@@ -42,7 +38,6 @@ class AuthService {
     }
   }
 
-  // ── REGISTER ───────────────────────────────────────────────
   Future<String?> register({
     required String name,
     required String email,
@@ -56,17 +51,15 @@ class AuthService {
         password: password,
       );
 
-      // Update display name
       await credential.user!.updateDisplayName(name);
 
-      // Firestore mein driver document banao
       await _db.collection('drivers').doc(credential.user!.uid).set({
         'uid': credential.user!.uid,
         'name': name,
         'email': email.trim(),
         'phone': phone,
         'gender': gender,
-        'role': 'driver', // default role
+        'role': 'driver',
         'status': 'active',
         'bookings': 0,
         'spent': '0',
@@ -76,7 +69,7 @@ class AuthService {
         'createdAt': FieldValue.serverTimestamp(),
       });
 
-      return null; // null = success (koi error nahi)
+      return null;
     } on FirebaseAuthException catch (e) {
       return _handleAuthError(e.code);
     } catch (e) {
@@ -84,22 +77,19 @@ class AuthService {
     }
   }
 
-  // ── LOGOUT ─────────────────────────────────────────────────
   Future<void> logout() async {
     await _auth.signOut();
   }
 
-  // ── PASSWORD RESET ─────────────────────────────────────────
   Future<String?> sendPasswordReset(String email) async {
     try {
       await _auth.sendPasswordResetEmail(email: email.trim());
-      return null; // success
+      return null;
     } on FirebaseAuthException catch (e) {
       return _handleAuthError(e.code);
     }
   }
 
-  // ── Check manager credentials (Manager login ke liye) ──────────
   Future<bool> isManager(String uid) async {
     try {
       final doc = await _db.collection('drivers').doc(uid).get();
@@ -109,7 +99,6 @@ class AuthService {
     }
   }
 
-  // ── Helper: initials nikalo name se ───────────────────────
   String _getInitials(String name) {
     final parts = name.trim().split(' ');
     if (parts.length >= 2) {
@@ -118,7 +107,6 @@ class AuthService {
     return parts[0].substring(0, 2).toUpperCase();
   }
 
-  // ── Helper: Firebase error codes ko readable banao ─────────
   String _handleAuthError(String code) {
     switch (code) {
       case 'user-not-found':
@@ -135,6 +123,8 @@ class AuthService {
         return 'Too many attempts. Please try later.';
       case 'network-request-failed':
         return 'No internet connection.';
+      case 'invalid-credential':
+        return 'Incorrect email or password.';
       default:
         return 'Authentication error. Please try again.';
     }

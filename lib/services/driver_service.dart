@@ -1,9 +1,3 @@
-// ============================================================
-//  SmartParkify — DriverService
-//  Firebase Firestore se driver profile manage karo
-//  Get profile, Update profile, Manager: manage drivers
-// ============================================================
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/driver_model.dart';

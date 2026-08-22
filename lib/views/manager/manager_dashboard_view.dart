@@ -1,11 +1,11 @@
 // lib/views/manager/manager_dashboard_view.dart
 import 'package:flutter/material.dart';
 import '../../core/routes.dart';
-import 'manager_driver_management_view.dart';
 import 'manager_parking_lots_view.dart';
 import 'manager_bookings_view.dart';
 import 'manager_analytics_view.dart';
 import 'manager_reports_view.dart';
+import 'manager_drivers_view.dart';
 
 class ManagerDashboardView extends StatelessWidget {
   const ManagerDashboardView({super.key});
@@ -110,7 +110,7 @@ class ManagerDashboardView extends StatelessWidget {
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const ManagerDriverManagementView(),
+                        builder: (_) => const ManagerDriversView(), // ← yeh
                       ),
                     ),
                   ),

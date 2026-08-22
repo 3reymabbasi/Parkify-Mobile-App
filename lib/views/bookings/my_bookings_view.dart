@@ -2,11 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:latlong2/latlong.dart';
 import '../../viewmodels/booking_viewmodel.dart';
+import '../../models/booking_model.dart';
 import '../parking/booking_confirmation_view.dart';
 import '../home/home_view.dart';
 
-class MyBookingsView extends StatelessWidget {
+class MyBookingsView extends StatefulWidget {
   const MyBookingsView({super.key});
+
+  @override
+  State<MyBookingsView> createState() => _MyBookingsViewState();
+}
+
+class _MyBookingsViewState extends State<MyBookingsView> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<BookingViewModel>().loadBookings();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,9 +62,9 @@ class MyBookingsView extends StatelessWidget {
                     bottomRight: Radius.circular(40),
                   ),
                 ),
-                child: Column(
+                child: const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Text(
                       'My Bookings',
                       style: TextStyle(
@@ -102,14 +116,12 @@ class MyBookingsView extends StatelessWidget {
                         itemCount: currentList.length,
                         padding: const EdgeInsets.only(bottom: 20),
                         itemBuilder: (context, index) {
-                          final booking = currentList[index];
+                          final Booking booking = currentList[index];
 
-                          // Fallback lat/lng agar purani (mock/completed)
-                          // bookings mein ye field na ho.
                           final double lat =
-                              double.tryParse(booking['lat'] ?? '') ?? 31.5204;
+                              double.tryParse(booking.lat ?? '') ?? 31.5204;
                           final double lng =
-                              double.tryParse(booking['lng'] ?? '') ?? 74.3587;
+                              double.tryParse(booking.lng ?? '') ?? 74.3587;
 
                           return Container(
                             margin: const EdgeInsets.symmetric(
@@ -136,7 +148,7 @@ class MyBookingsView extends StatelessWidget {
                                   children: [
                                     Expanded(
                                       child: Text(
-                                        booking['location']!,
+                                        booking.parkingName,
                                         style: const TextStyle(
                                           fontSize: 20,
                                           fontWeight: FontWeight.bold,
@@ -185,7 +197,7 @@ class MyBookingsView extends StatelessWidget {
                                     const SizedBox(width: 8),
                                     Expanded(
                                       child: Text(
-                                        booking['address']!,
+                                        booking.address,
                                         style: const TextStyle(
                                           fontSize: 14,
                                           color: Colors.black54,
@@ -204,7 +216,7 @@ class MyBookingsView extends StatelessWidget {
                                     ),
                                     const SizedBox(width: 8),
                                     Text(
-                                      booking['date']!,
+                                      booking.date,
                                       style: const TextStyle(
                                         fontWeight: FontWeight.w500,
                                       ),
@@ -217,7 +229,7 @@ class MyBookingsView extends StatelessWidget {
                                     ),
                                     const SizedBox(width: 8),
                                     Text(
-                                      booking['time']!,
+                                      booking.time,
                                       style: const TextStyle(
                                         fontWeight: FontWeight.w500,
                                       ),
@@ -230,11 +242,11 @@ class MyBookingsView extends StatelessWidget {
                                       MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
-                                      'Slot: ${booking['slot']!}',
+                                      'Slot: ${booking.slot}',
                                       style: const TextStyle(fontSize: 16),
                                     ),
                                     Text(
-                                      booking['amount']!,
+                                      booking.amount,
                                       style: const TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
@@ -244,9 +256,11 @@ class MyBookingsView extends StatelessWidget {
                                   ],
                                 ),
                                 const SizedBox(height: 20),
+
+                                // View QR Button
                                 SizedBox(
                                   width: double.infinity,
-                                  height: 52,
+                                  height: 48,
                                   child: ElevatedButton.icon(
                                     onPressed: () {
                                       Navigator.push(
@@ -255,11 +269,11 @@ class MyBookingsView extends StatelessWidget {
                                           builder: (_) =>
                                               BookingConfirmationView(
                                                 parkingName:
-                                                    booking['location']!,
-                                                date: booking['date']!,
-                                                time: booking['time']!,
-                                                slot: booking['slot']!,
-                                                amount: booking['amount']!,
+                                                    booking.parkingName,
+                                                date: booking.date,
+                                                time: booking.time,
+                                                slot: booking.slot,
+                                                amount: booking.amount,
                                                 location: LatLng(lat, lng),
                                               ),
                                         ),
@@ -284,6 +298,91 @@ class MyBookingsView extends StatelessWidget {
                                     ),
                                   ),
                                 ),
+
+                                // Cancel Button (sirf Active tab pe)
+                                if (vm.selectedTab == 0) ...[
+                                  const SizedBox(height: 10),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    height: 48,
+                                    child: OutlinedButton.icon(
+                                      onPressed: () async {
+                                        final confirm = await showDialog<bool>(
+                                          context: context,
+                                          builder: (ctx) => AlertDialog(
+                                            title: const Text('Cancel Booking'),
+                                            content: const Text(
+                                              'Are you sure you want to cancel this booking?',
+                                            ),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () =>
+                                                    Navigator.pop(ctx, false),
+                                                child: const Text('No'),
+                                              ),
+                                              ElevatedButton(
+                                                onPressed: () =>
+                                                    Navigator.pop(ctx, true),
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: Colors.red,
+                                                ),
+                                                child: const Text(
+                                                  'Yes, Cancel',
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+
+                                        if (confirm == true) {
+                                          final success = await vm
+                                              .cancelBooking(booking.id);
+                                          if (context.mounted) {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  success
+                                                      ? 'Booking Cancelled'
+                                                      : 'Cancel failed',
+                                                ),
+                                                backgroundColor: success
+                                                    ? Colors.orange
+                                                    : Colors.red,
+                                              ),
+                                            );
+                                          }
+                                        }
+                                      },
+                                      icon: const Icon(
+                                        Icons.cancel_outlined,
+                                        color: Colors.red,
+                                      ),
+                                      label: const Text(
+                                        'Cancel Booking',
+                                        style: TextStyle(
+                                          color: Colors.red,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      style: OutlinedButton.styleFrom(
+                                        side: const BorderSide(
+                                          color: Colors.red,
+                                          width: 1.5,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ],
                             ),
                           );
