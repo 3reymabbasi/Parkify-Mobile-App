@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "307727384606",
+    "project_id": "parkify-38e62",
+    "storage_bucket": "parkify-38e62.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:307727384606:android:a4cc3cbfc9ca62d43eae0f",
+        "android_client_info": {
+          "package_name": "com.example.smartparkify"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCwKmxmwLIiMTgqdFRfbhQqPJKZpYqr2so"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

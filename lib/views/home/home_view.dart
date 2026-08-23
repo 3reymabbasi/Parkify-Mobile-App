@@ -25,6 +25,7 @@ class _HomeViewState extends State<HomeView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey.shade50,
       body: _screens[_currentIndex],
       bottomNavigationBar: NavigationBar(
         onDestinationSelected: (int index) {
@@ -72,7 +73,7 @@ class _HomeViewState extends State<HomeView> {
     int index,
   ) {
     final bool isSelected = _currentIndex == index;
-    const selectedColor = Color(0xFF0A2540);
+    const selectedColor = Color(0xFF00796B);
 
     return NavigationDestination(
       icon: Stack(

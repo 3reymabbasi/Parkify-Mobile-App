@@ -26,13 +26,21 @@ class _ManagerBookingsViewState extends State<ManagerBookingsView> {
 
         final total = vm.allBookings.length;
         final active = vm.allBookings
-            .where((b) => (b['status']?.toString().toLowerCase() ?? '') == 'active')
+            .where(
+              (b) => (b['status']?.toString().toLowerCase() ?? '') == 'active',
+            )
             .length;
         final completed = vm.allBookings
-            .where((b) => (b['status']?.toString().toLowerCase() ?? '') == 'completed')
+            .where(
+              (b) =>
+                  (b['status']?.toString().toLowerCase() ?? '') == 'completed',
+            )
             .length;
         final cancelled = vm.allBookings
-            .where((b) => (b['status']?.toString().toLowerCase() ?? '') == 'cancelled')
+            .where(
+              (b) =>
+                  (b['status']?.toString().toLowerCase() ?? '') == 'cancelled',
+            )
             .length;
 
         return Scaffold(
@@ -52,13 +60,16 @@ class _ManagerBookingsViewState extends State<ManagerBookingsView> {
                     child: Row(
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+                          icon: const Icon(
+                            Icons.arrow_back_ios,
+                            color: Colors.white,
+                          ),
                           onPressed: () => Navigator.pop(context),
                         ),
                         const Text(
                           'Bookings',
                           style: TextStyle(
-                            fontSize: 28,
+                            fontSize: 26,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
@@ -66,108 +77,105 @@ class _ManagerBookingsViewState extends State<ManagerBookingsView> {
                       ],
                     ),
                   ),
-
-                  // Stats
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: GridView.count(
                       crossAxisCount: 2,
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      mainAxisSpacing: 12,
-                      crossAxisSpacing: 12,
-                      childAspectRatio: 1.75,
+                      mainAxisSpacing: 10,
+                      crossAxisSpacing: 10,
+                      childAspectRatio: 1.2,
                       children: [
                         _StatCard(
-                          title: "$total",
-                          subtitle: "Total Bookings",
+                          title: '$total',
+                          subtitle: 'Total Bookings',
                           icon: Icons.calendar_today,
                           color: Colors.blue,
                         ),
                         _StatCard(
-                          title: "$active",
-                          subtitle: "Active Now",
+                          title: '$active',
+                          subtitle: 'Active Now',
                           icon: Icons.timer,
                           color: Colors.green,
                         ),
                         _StatCard(
-                          title: "$completed",
-                          subtitle: "Completed",
+                          title: '$completed',
+                          subtitle: 'Completed',
                           icon: Icons.check_circle,
                           color: Colors.purple,
                         ),
                         _StatCard(
-                          title: "$cancelled",
-                          subtitle: "Cancelled",
+                          title: '$cancelled',
+                          subtitle: 'Cancelled',
                           icon: Icons.cancel,
                           color: Colors.red,
                         ),
                       ],
                     ),
                   ),
-
-                  const SizedBox(height: 20),
-
-                  // Tabs
+                  const SizedBox(height: 16),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
-                        children: ["All", "Active", "Completed", "Cancelled"]
+                        children: ['All', 'Active', 'Completed', 'Cancelled']
                             .map((tab) {
-                          final bool selected = vm.selectedTab == tab;
-                          return GestureDetector(
-                            onTap: () => vm.setTab(tab),
-                            child: Container(
-                              margin: const EdgeInsets.only(right: 8),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 10,
-                              ),
-                              decoration: BoxDecoration(
-                                color: selected
-                                    ? const Color(0xFF0A2540)
-                                    : Colors.white,
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                              child: Text(
-                                tab,
-                                style: TextStyle(
-                                  color: selected ? Colors.white : Colors.black87,
-                                  fontWeight: FontWeight.w600,
+                              final bool selected = vm.selectedTab == tab;
+                              return GestureDetector(
+                                onTap: () => vm.setTab(tab),
+                                child: Container(
+                                  margin: const EdgeInsets.only(right: 8),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                    vertical: 10,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: selected
+                                        ? const Color(0xFF0A2540)
+                                        : Colors.white,
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                  child: Text(
+                                    tab,
+                                    style: TextStyle(
+                                      color: selected
+                                          ? Colors.white
+                                          : Colors.black87,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ),
-                          );
-                        }).toList(),
+                              );
+                            })
+                            .toList(),
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 16),
-
                   Expanded(
                     child: vm.loading
                         ? const Center(
-                            child: CircularProgressIndicator(color: Colors.white),
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                            ),
                           )
                         : bookings.isEmpty
-                            ? const Center(
-                                child: Text(
-                                  'No bookings found',
-                                  style: TextStyle(color: Colors.white70),
-                                ),
-                              )
-                            : ListView.builder(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 16),
-                                itemCount: bookings.length,
-                                itemBuilder: (context, index) {
-                                  final booking = bookings[index];
-                                  return _BookingCard(booking: booking, vm: vm);
-                                },
-                              ),
+                        ? const Center(
+                            child: Text(
+                              'No bookings found',
+                              style: TextStyle(color: Colors.white70),
+                            ),
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            itemCount: bookings.length,
+                            itemBuilder: (context, index) {
+                              final booking = bookings[index];
+                              return _BookingCard(booking: booking, vm: vm);
+                            },
+                          ),
                   ),
                 ],
               ),
@@ -223,8 +231,10 @@ class _BookingCard extends StatelessWidget {
                   ),
                 ),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: statusColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(30),
@@ -271,8 +281,10 @@ class _BookingCard extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Total Amount',
-                        style: TextStyle(color: Colors.black54)),
+                    const Text(
+                      'Total Amount',
+                      style: TextStyle(color: Colors.black54),
+                    ),
                     Text(
                       amount.contains('Rs') ? amount : 'Rs. $amount',
                       style: const TextStyle(
@@ -286,8 +298,10 @@ class _BookingCard extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    const Text('Payment',
-                        style: TextStyle(color: Colors.black54)),
+                    const Text(
+                      'Payment',
+                      style: TextStyle(color: Colors.black54),
+                    ),
                     Text(
                       payment,
                       style: const TextStyle(
@@ -302,32 +316,28 @@ class _BookingCard extends StatelessWidget {
             ),
             if (status.toLowerCase() == 'active') ...[
               const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
-                      ),
-                      onPressed: () async {
-                        final ok = await vm.completeBooking(id);
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(ok
-                                  ? 'Marked as Completed'
-                                  : 'Failed to update'),
-                              backgroundColor:
-                                  ok ? Colors.green : Colors.red,
-                            ),
-                          );
-                        }
-                      },
-                      child: const Text('Complete'),
-                    ),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
                   ),
-                ],
+                  onPressed: () async {
+                    final ok = await vm.completeBooking(id);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            ok ? 'Marked as Completed' : 'Failed to update',
+                          ),
+                          backgroundColor: ok ? Colors.green : Colors.red,
+                        ),
+                      );
+                    }
+                  },
+                  child: const Text('Complete'),
+                ),
               ),
             ],
           ],
@@ -353,36 +363,38 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: color, size: 20),
+            child: Icon(icon, color: color, size: 18),
           ),
           const SizedBox(height: 6),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              title,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
           ),
           Text(
             subtitle,
-            style: const TextStyle(color: Colors.white70, fontSize: 12),
+            style: const TextStyle(color: Colors.white70, fontSize: 11),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),

@@ -21,15 +21,9 @@ class DefaultFirebaseOptions {
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for android - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return android;
       case TargetPlatform.iOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for ios - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return ios;
       case TargetPlatform.macOS:
         return macos;
       case TargetPlatform.windows:
@@ -70,6 +64,22 @@ class DefaultFirebaseOptions {
     messagingSenderId: '307727384606',
     projectId: 'parkify-38e62',
     authDomain: 'parkify-38e62.firebaseapp.com',
+    storageBucket: 'parkify-38e62.firebasestorage.app',
+  );
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyC1tomAz-6fcieUZbHn0iWeqqBian-e9QE',
+    appId: '1:307727384606:ios:60392a09aad096b13eae0f',
+    messagingSenderId: '307727384606',
+    projectId: 'parkify-38e62',
+    storageBucket: 'parkify-38e62.firebasestorage.app',
+    iosBundleId: 'com.example.smartparkify',
+  );
+
+  static const FirebaseOptions android = FirebaseOptions(
+    apiKey: 'AIzaSyCwKmxmwLIiMTgqdFRfbhQqPJKZpYqr2so',
+    appId: '1:307727384606:android:a4cc3cbfc9ca62d43eae0f',
+    messagingSenderId: '307727384606',
+    projectId: 'parkify-38e62',
     storageBucket: 'parkify-38e62.firebasestorage.app',
   );
 }

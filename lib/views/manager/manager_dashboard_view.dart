@@ -1,4 +1,3 @@
-// lib/views/manager/manager_dashboard_view.dart
 import 'package:flutter/material.dart';
 import '../../core/routes.dart';
 import 'manager_parking_lots_view.dart';
@@ -28,7 +27,6 @@ class ManagerDashboardView extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Header
                   Row(
                     children: [
                       IconButton(
@@ -43,7 +41,7 @@ class ManagerDashboardView extends StatelessWidget {
                         child: Text(
                           'Manager Panel',
                           style: TextStyle(
-                            fontSize: 28,
+                            fontSize: 26,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
@@ -60,16 +58,14 @@ class ManagerDashboardView extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
-
-                  // Stats Grid
+                  const SizedBox(height: 20),
                   GridView.count(
                     crossAxisCount: 2,
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    mainAxisSpacing: 14,
-                    crossAxisSpacing: 14,
-                    childAspectRatio: 1.65,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
+                    childAspectRatio: 1.15,
                     children: const [
                       _StatCard(
                         title: '2,456',
@@ -89,8 +85,7 @@ class ManagerDashboardView extends StatelessWidget {
                       _RevenueCard(),
                     ],
                   ),
-
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 28),
                   const Text(
                     'Manager Modules',
                     style: TextStyle(
@@ -100,8 +95,6 @@ class ManagerDashboardView extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-
-                  // Module Tiles
                   _ModuleTile(
                     icon: Icons.people,
                     color: Colors.purple,
@@ -110,7 +103,7 @@ class ManagerDashboardView extends StatelessWidget {
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const ManagerDriversView(), // ← yeh
+                        builder: (_) => const ManagerDriversView(),
                       ),
                     ),
                   ),
@@ -201,8 +194,7 @@ class ManagerDashboardView extends StatelessWidget {
               ),
             ),
             onPressed: () {
-              Navigator.pop(ctx); // dialog band karo
-              // Poora navigation stack saaf karke Login page pe le jao
+              Navigator.pop(ctx);
               Navigator.of(
                 context,
               ).pushNamedAndRemoveUntil(AppRoutes.login, (route) => false);
@@ -221,7 +213,6 @@ class ManagerDashboardView extends StatelessWidget {
   }
 }
 
-// ── Stat Card ──────────────────────────────────────────────
 class _StatCard extends StatelessWidget {
   final String title;
   final String subtitle;
@@ -236,7 +227,7 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(20),
@@ -245,19 +236,24 @@ class _StatCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: Colors.white, size: 32),
-          const SizedBox(height: 12),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 26,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+          Icon(icon, color: Colors.white, size: 24),
+          const SizedBox(height: 8),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              title,
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
           ),
           Text(
             subtitle,
-            style: const TextStyle(fontSize: 14, color: Colors.white70),
+            style: const TextStyle(fontSize: 12, color: Colors.white70),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -265,14 +261,13 @@ class _StatCard extends StatelessWidget {
   }
 }
 
-// ── Revenue Card ───────────────────────────────────────────
 class _RevenueCard extends StatelessWidget {
   const _RevenueCard();
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(20),
@@ -281,17 +276,22 @@ class _RevenueCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            'Rs. 45.2K',
-            style: TextStyle(
-              fontSize: 26,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              'Rs. 45.2K',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
           ),
           Text(
             "Today's Revenue",
-            style: TextStyle(fontSize: 14, color: Colors.white70),
+            style: TextStyle(fontSize: 12, color: Colors.white70),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -299,7 +299,6 @@ class _RevenueCard extends StatelessWidget {
   }
 }
 
-// ── Module Tile ────────────────────────────────────────────
 class _ModuleTile extends StatelessWidget {
   final IconData icon;
   final Color color;

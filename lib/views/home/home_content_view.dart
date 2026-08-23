@@ -8,216 +8,209 @@ class HomeContentView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Gradient Header
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(24, 40, 24, 60),
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0xFF0A2540), Color(0xFF00796B)],
+    return Container(
+      color: Colors.grey.shade50,
+      child: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(24, 40, 24, 60),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0xFF0A2540), Color(0xFF00796B)],
+                  ),
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(40),
+                    bottomRight: Radius.circular(40),
+                  ),
                 ),
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(40),
-                  bottomRight: Radius.circular(40),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Hello, Driver 👋',
+                              style: TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              'Find your perfect parking spot',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.white70,
+                              ),
+                            ),
+                          ],
+                        ),
+                        IconButton(
+                          icon: const Icon(
+                            Icons.notifications_outlined,
+                            color: Colors.white,
+                            size: 28,
+                          ),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const NotificationsView(),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 32),
+                    TextField(
+                      decoration: InputDecoration(
+                        hintText: 'Search parking locations...',
+                        hintStyle: const TextStyle(color: Colors.white70),
+                        prefixIcon: const Icon(
+                          Icons.search,
+                          color: Colors.white70,
+                        ),
+                        filled: true,
+                        fillColor: Colors.white.withValues(alpha: 0.15),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 16,
+                          horizontal: 20,
+                        ),
+                      ),
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  ],
                 ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text(
-                            'Hello, Driver 👋',
-                            style: TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            'Find your perfect parking spot',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.white70,
-                            ),
-                          ),
-                        ],
-                      ),
-                      IconButton(
-                        icon: const Icon(
-                          Icons.notifications_outlined,
-                          color: Colors.white,
-                          size: 28,
-                        ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildStatCard(
+                      Icons.calendar_today,
+                      const Color(0xFF1976D2),
+                      'Total Bookings',
+                      '24',
+                    ),
+                    _buildStatCard(
+                      Icons.timer,
+                      const Color(0xFF00796B),
+                      'Active Now',
+                      '1',
+                    ),
+                    _buildStatCard(
+                      Icons.attach_money,
+                      const Color(0xFF7B1FA2),
+                      'Total Spent',
+                      r'Rs.340',
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _buildQuickButton(
+                        icon: Icons.location_on,
+                        label: 'Find Parking',
+                        color: const Color(0xFF0A2540),
                         onPressed: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const NotificationsView(),
+                              builder: (_) => const FindParkingView(),
                             ),
                           );
                         },
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 32),
-                  TextField(
-                    decoration: InputDecoration(
-                      hintText: 'Search parking locations...',
-                      hintStyle: const TextStyle(color: Colors.white70),
-                      prefixIcon: const Icon(
-                        Icons.search,
-                        color: Colors.white70,
-                      ),
-                      filled: true,
-                      fillColor: Colors.white.withValues(alpha: 0.15),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        vertical: 16,
-                        horizontal: 20,
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildQuickButton(
+                        icon: Icons.calendar_month,
+                        label: 'My Bookings',
+                        color: const Color(0xFF00796B),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const MyBookingsView(),
+                            ),
+                          );
+                        },
                       ),
                     ),
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-
-            // Stats Cards
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildStatCard(
-                    Icons.calendar_today,
-                    const Color(0xFF1976D2),
-                    'Total Bookings',
-                    '24',
-                  ),
-                  _buildStatCard(
-                    Icons.timer,
-                    const Color(0xFF00796B),
-                    'Active Now',
-                    '1',
-                  ),
-                  _buildStatCard(
-                    Icons.attach_money,
-                    const Color(0xFF7B1FA2),
-                    'Total Spent',
-                    r'Rs.340',
-                  ),
-                ],
+              const SizedBox(height: 32),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Nearby Parking',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    Text(
+                      'See All',
+                      style: TextStyle(
+                        color: Color(0xFF00796B),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-
-            // Quick Action Buttons
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _buildQuickButton(
-                      icon: Icons.location_on,
-                      label: 'Find Parking',
-                      color: const Color(0xFF0A2540),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const FindParkingView(),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _buildQuickButton(
-                      icon: Icons.calendar_month,
-                      label: 'My Bookings',
-                      color: const Color(0xFF00796B),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const MyBookingsView(),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
+              const SizedBox(height: 16),
+              _buildParkingCard(
+                'Central Mall Parking',
+                'Rs.50/hr',
+                '0.5 km',
+                '12/50',
+                const Color(0xFF00BFA5),
               ),
-            ),
-
-            const SizedBox(height: 32),
-
-            // Nearby Parking Section
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
-                  Text(
-                    'Nearby Parking',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  Text(
-                    'See All',
-                    style: TextStyle(
-                      color: Color(0xFF00BFA5),
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
+              _buildParkingCard(
+                'City Plaza Parking',
+                'Rs.40/hr',
+                '1.2 km',
+                '8/40',
+                const Color(0xFF00796B),
               ),
-            ),
-            const SizedBox(height: 16),
-
-            _buildParkingCard(
-              'Central Mall Parking',
-              'Rs.50/hr',
-              '0.5 km',
-              '12/50',
-              const Color(0xFF00BFA5),
-            ),
-            _buildParkingCard(
-              'City Plaza Parking',
-              'Rs.40/hr',
-              '1.2 km',
-              '8/40',
-              const Color(0xFF00796B),
-            ),
-            _buildParkingCard(
-              'Metro Station P1',
-              'Rs.30/hr',
-              '2.0 km',
-              '25/100',
-              const Color(0xFF1976D2),
-            ),
-
-            const SizedBox(height: 100),
-          ],
+              _buildParkingCard(
+                'Metro Station P1',
+                'Rs.30/hr',
+                '2.0 km',
+                '25/100',
+                const Color(0xFF1976D2),
+              ),
+              const SizedBox(height: 100),
+            ],
+          ),
         ),
       ),
     );
@@ -309,6 +302,7 @@ class HomeContentView extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Card(
+        color: Colors.white,
         elevation: 2,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: Padding(
